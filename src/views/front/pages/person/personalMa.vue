@@ -157,139 +157,147 @@
 </template>
 
 <script>
+import { ref, reactive, computed, onMounted } from 'vue';
+import { useStore } from 'vuex';
 import axios from "axios";
+
 export default {
   name: "Home",
-  data() {
-    return {
-      answer1:'（一）账号为学号，初始密码：12345678，修改密码后若遗忘请联系管理员重置密码。\n（二）使用“视点分析”功能时，距离设置会影响分析时间。\n（三）提交考核问题请注意截止时间，超时将无法提交。\n（四）组长在完成实习报告提交后，请为小组成员进行评分。\n（五）使用“剖面线工具”，在自定义绘制后双击鼠标即可生成剖面图。\n（六）若在使用过程中出现长时间卡顿或加载失败，可以尝试刷新或更换网络重新登录。',
-      //stuId:this.$store.getters.stu_id,
-      old:'',
-      new1:'',
-      new2:'',
-      ifCaptain:sessionStorage.is_leader === 'true' ? '是' : '否', //判断是否是队长
-      header: [
-        {
-          text: "学号",
-          align: "start",
-          value: "id",
-        },
-        { text: "班级", value: "class" },
-        { text: "姓名", value: "name" },
-      ],
-      list: [],
-      show1: false,
-      show2: false,
-      show3: false,
-      rules: {
-        required: (value) => !!value || "请输入",
-        min: (v) => v.length >= 6 || "最少输入六位",
-        max: (v) => v.length <= 20 || "最多输入20位",
+  setup() {
+    const store = useStore();
+    
+    const answer1 = ref('（一）账号为学号，初始密码：12345678，修改密码后若遗忘请联系管理员重置密码。\n（二）使用"视点分析"功能时，距离设置会影响分析时间。\n（三）提交考核问题请注意截止时间，超时将无法提交。\n（四）组长在完成实习报告提交后，请为小组成员进行评分。\n（五）使用"剖面线工具"，在自定义绘制后双击鼠标即可生成剖面图。\n（六）若在使用过程中出现长时间卡顿或加载失败，可以尝试刷新或更换网络重新登录。');
+    const old = ref('');
+    const new1 = ref('');
+    const new2 = ref('');
+    const ifCaptain = ref(sessionStorage.is_leader === 'true' ? '是' : '否'); // 判断是否是队长
+    const list = ref([]);
+    const show1 = ref(false);
+    const show2 = ref(false);
+    const show3 = ref(false);
+    
+    const rules = reactive({
+      required: (value) => !!value || "请输入",
+      min: (v) => v.length >= 6 || "最少输入六位",
+      max: (v) => v.length <= 20 || "最多输入20位",
+    });
+    
+    const header = ref([
+      {
+        text: "学号",
+        align: "start",
+        value: "id",
       },
-    };
-  },
-  methods: {
-    member(){
-      let mem =sessionStorage.group_member
-      console.log('111',mem);
-      mem=mem.slice(1,-1);
-      //从，分割变数组
-      mem =mem.split(',');
-      console.log('222',mem);      
-      // console.log(mem)
+      { text: "班级", value: "class" },
+      { text: "姓名", value: "name" },
+    ]);
+    
+    const member = () => {
+      let mem = sessionStorage.group_member;
+      console.log('111', mem);
+      mem = mem.slice(1, -1);
+      // 从，分割变数组
+      mem = mem.split(',');
+      console.log('222', mem);
 
       axios({
         method: "get",
-        url: "https://danxiagis.top:8081/login/smallWeb/getStudentList",//http://danxiagis.top:3000/ui/teacher/studentList
+        url: "https://danxiagis.top:8081/login/smallWeb/getStudentList",
       }).then((response) => {
-        let res = response.data
-        //存储组员的信息
-        let arry =[];
+        let res = response.data;
+        // 存储组员的信息
+        let arry = [];
         
-        //外层，进入每个人对象
-        for(let i =0;i<mem.length;i++){
-          //获取每个人的对象的属性
-          for(let j=0;j<res.length;j++){
-            if(res[j].stu_id==mem[i]){
-                let Arry =  {
+        // 外层，进入每个人对象
+        for (let i = 0; i < mem.length; i++) {
+          // 获取每个人的对象的属性
+          for (let j = 0; j < res.length; j++) {
+            if (res[j].stu_id == mem[i]) {
+              let Arry = {
                 id: res[j].stu_id,
                 class: res[j].class_name,
                 name: res[j].name,
-                }
-                arry.push(Arry)
-                console.log(mem[i]);
+              };
+              arry.push(Arry);
+              console.log(mem[i]);
             }
-          } 
+          }
         }
-        this.list=arry
-        
-      })
-
-    },
-    check(){
-    var o = sessionStorage.password;
-   
-    if(this.old!=o){
-      alert('旧密码错误')
-    }
-    if(this.new1 == '' || this.new2==''||this.old==''){
-      alert('不能为空')
-    }
-    else if(this.new1 != this.new2){
-      alert('两次输入不一致')
-    }else if(this.new2==this.old){
-      alert('两次密码不能为一样的')
-      return;
-    }
+        list.value = arry;
+      });
+    };
     
+    const check = () => {
+      var o = sessionStorage.password;
+      
+      if (old.value != o) {
+        alert('旧密码错误');
+      }
+      if (new1.value == '' || new2.value == '' || old.value == '') {
+        alert('不能为空');
+      }
+      else if (new1.value != new2.value) {
+        alert('两次输入不一致');
+      } else if (new2.value == old.value) {
+        alert('两次密码不能为一样的');
+        return;
+      }
+      
       axios({
         method: "post",
-        url: "https://danxiagis.top:8081/login/smallWeb/changePassword",//http://172.18.204.206:8088/login/smallWeb/changePassword
+        url: "https://danxiagis.top:8081/login/smallWeb/changePassword",
         params: {
-          Stu_id:this.stuId,
-          Password:this.new2
-         }, 
-         withCredentials:true
+          Stu_id: stuId.value,
+          Password: new2.value
+        },
+        withCredentials: true
       }).then((response) => {
-        let res = response
-        if (res.status >= 200&&res.status<300){
-          
-            alert("密码修改成功!");
-            console.log("测试用例更新成功");
+        let res = response;
+        if (res.status >= 200 && res.status < 300) {
+          alert("密码修改成功!");
+          console.log("测试用例更新成功");
         }
-        
       }).catch(function(error) {
-        console.log(error)
-        alert("修改密码失败"+error);
+        console.log(error);
+        alert("修改密码失败" + error);
       });
+    };
     
-    }
+    // 计算属性
+    const className = computed(() => store.getters.class_name);
+    const stuId = computed(() => store.getters.stu_id);
+    const userName = computed(() => store.getters.userName);
+    const groupId = computed(() => store.getters.group_id);
+    const groupMember = computed(() => store.getters.group_member);
     
-  },
-  computed: {
-    className() {
-      return this.$store.getters.class_name;
-    },
-    stuId() {
-      return this.$store.getters.stu_id;
-    }, 
-    userName() {
-      return this.$store.getters.userName;
-    },
-    groupId() {
-      return this.$store.getters.group_id;
-    },
-
-    groupMember() {
-      return this.$store.getters.group_member;
-    },
-  },
-  mounted: function () {
-    this.member()
+    onMounted(() => {
+      member();
+    });
     
-  },
+    return {
+      answer1,
+      old,
+      new1,
+      new2,
+      ifCaptain,
+      header,
+      list,
+      show1,
+      show2,
+      show3,
+      rules,
+      member,
+      check,
+      className,
+      stuId,
+      userName,
+      groupId,
+      groupMember
+    };
+  }
 };
 </script>
+
 <style>
 #passwordpage{
   position: relative;

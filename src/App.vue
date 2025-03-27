@@ -5,14 +5,17 @@
 </template>
 
 <script>
+import { onMounted } from 'vue';
+
 export default {
   name: 'App',
-  mounted() {
-    if( document.getElementById('Loading'))
-      document.getElementById('Loading').remove();
-
+  setup() {
+    onMounted(() => {
+      if (document.getElementById('Loading'))
+        document.getElementById('Loading').remove();
+    });
     
+    return {};
   }
 };
-
 </script>

@@ -36,41 +36,38 @@
 </template>
 
 <script>
+import { ref, reactive, shallowRef, onMounted } from 'vue';
 import { loadModules } from "esri-loader";
 
 export default {
-  data() {
-    return {
-      map: "",
-      mapConfig: {
-        container: "fly2",
-        sceneView: null,
-      },
-      graphicsLayer: null, //绘制图层
-      option: false,
-      sketchViewModel: null, //绘制折线的工具
-      point: null, //绘制的点转为gemory
-      schedule: "0", //浏览进度的值
-      Max: "10", //浏览进度的最大值
-      //存储用户画的点的经纬度及高程
-      paths: [],
-      cam: "",
-      speed: "2", //飞行速度
-      tickLabels: ["0.6", "0.8", "1", "2", "4", "6", "8", "10"],
-      homeCam:"",//初始视图
-      ccWidget:null,//坐标控件
-    };
-  },
-  methods: {
-    //创建地图
-    _createMapView: function () {
-      const _self = this; //定义一个_self防止后续操作中this丢失
+  setup() {
+    const map = shallowRef(null);
+    const mapConfig = reactive({
+      container: "fly2",
+      sceneView: null,
+    });
+    
+    const graphicsLayer = shallowRef(null); // 绘制图层
+    const option = ref(false);
+    const sketchViewModel = shallowRef(null); // 绘制折线的工具
+    const point = shallowRef(null); // 绘制的点转为gemory
+    const schedule = ref("0"); // 浏览进度的值
+    const Max = ref("10"); // 浏览进度的最大值
+    // 存储用户画的点的经纬度及高程
+    const paths = ref([]);
+    const cam = shallowRef(null);
+    const speed = ref("2"); // 飞行速度
+    const tickLabels = ref(["0.6", "0.8", "1", "2", "4", "6", "8", "10"]);
+    const homeCam = shallowRef(null); // 初始视图
+    const ccWidget = shallowRef(null); // 坐标控件
+    
+    // 创建地图
+    const _createMapView = () => {
       const option = {
-        //定义一个包含有JS API中js开发包和css样式文件的对象
         url: "https://js.arcgis.com/4.19/init.js",
         css: "https://js.arcgis.com/4.19/esri/themes/light/main.css",
       };
-      //通过loadModules来做衔接
+      
       loadModules(
         [
           "esri/Map",
@@ -93,33 +90,31 @@ export default {
             Point,
             CoordinateConversion,
           ]) => {
-            //业务代码在此处编写
-            _self.graphicsLayer = new GraphicsLayer({
+            graphicsLayer.value = new GraphicsLayer({
               elevationInfo: { mode: "on-the-ground" },
             });
-            _self.map = new Map({
-              //实例化地图
+            
+            map.value = new Map({
               basemap: "hybrid",
               ground: "world-elevation",
-              layers: [_self.graphicsLayer],
+              layers: [graphicsLayer.value],
             });
 
-            _self.mapConfig.sceneView = new SceneView({
-              //实例化地图视图
-              map: _self.map,
+            mapConfig.sceneView = new SceneView({
+              map: map.value,
               zoom: 14,
               camera: {
                 position: [113.75665604199996, 25.04682589249998, 180],
                 heading: 255,
                 tilt: 80,
               },
-              container: _self.mapConfig.container,
+              container: mapConfig.container,
             });
 
-            _self.cam = new Camera();
-            _self.homeCam = new Camera();
+            cam.value = new Camera();
+            homeCam.value = new Camera();
 
-            //画出的线的样式
+            // 画出的线的样式
             const line = {
               type: "line-3d",
               symbolLayers: [
@@ -132,223 +127,160 @@ export default {
                 },
               ],
             };
-            //设置sketchViewModel
-            _self.sketchViewModel = new SketchViewModel({
-              layer: _self.graphicsLayer,
-              view: _self.mapConfig.sceneView,
-              polylineSymbol: line,
-              snappingOptions: "selfEnabled", //捕捉自己的状态
-            });
-            _self.point = new Point();
             
-            //显示此时坐标
-            _self.ccWidget = new CoordinateConversion({
-              view: _self.mapConfig.sceneView,
+            // 设置sketchViewModel
+            sketchViewModel.value = new SketchViewModel({
+              layer: graphicsLayer.value,
+              view: mapConfig.sceneView,
+              polylineSymbol: line,
+              snappingOptions: "selfEnabled", // 捕捉自己的状态
             });
-            _self.mapConfig.sceneView.ui.add(_self.ccWidget, "bottom-left");
+            
+            point.value = new Point();
+            
+            // 显示此时坐标
+            ccWidget.value = new CoordinateConversion({
+              view: mapConfig.sceneView,
+            });
+            
+            mapConfig.sceneView.ui.add(ccWidget.value, "bottom-left");
           }
         )
         .catch((err) => {
-          _self.$message("地图创建失败，" + err);
+          console.error("地图创建失败，" + err);
         });
-    },
+    };
 
-    //激活sketchviewModel工具
-    creatSke: function () {
-      const _self = this;
-      //调整摄像机为俯视
-      (_self.schedule = 0),
-        // _self.cam = _self.mapConfig.sceneView.camera.clone();
-        (_self.mapConfig.sceneView.camera.tilt = 0);
-      _self.mapConfig.sceneView.zoom = 17;
-      // _self.mapConfig.sceneView.goTo(_self.cam);
+    // 激活sketchviewModel工具
+    const creatSke = () => {
+      // 调整摄像机为俯视
+      schedule.value = 0;
+      mapConfig.sceneView.camera.tilt = 0;
+      mapConfig.sceneView.zoom = 17;
 
-      _self.sketchViewModel.create("polyline");
-      //设置SketchViewModel的监听状态，当绘画完成后、取消后
-      const skeCreate = _self.sketchViewModel.on("create", function (event) {
+      sketchViewModel.value.create("polyline");
+      // 设置SketchViewModel的监听状态，当绘画完成后、取消后
+      const skeCreate = sketchViewModel.value.on("create", function (event) {
         if (event.state === "complete") {
-          //展开进度条以及飞行速度调节内容
-          _self.option = true;
-          // console.log(_self.graphicsLayer.graphics.items);
-          // console.log(_self.graphicsLayer.graphics.items[0].geometry.paths[0]);
-          //获得绘制的折点，并转为经纬度坐标，最后是经纬度坐标的数组[[],[]]
+          // 展开进度条以及飞行速度调节内容
+          option.value = true;
+          
+          // 获得绘制的折点，并转为经纬度坐标，最后是经纬度坐标的数组[[],[]]
           const geometryItems =
-            _self.graphicsLayer.graphics.items[0].geometry.paths[0];
+            graphicsLayer.value.graphics.items[0].geometry.paths[0];
 
           for (var i = 0; i < geometryItems.length; i++) {
             const mercator = geometryItems[i];
-            const endItem = _self.mercatorToLoca(mercator);
-            _self.point.x = endItem[0];
-            _self.point.y = endItem[1];
-            // console.log(_self.point);
-            //获得高程数据并加入到数组种
-            _self.map.ground
-              .queryElevation(_self.point, { returnSampleInfo: true })
+            const endItem = mercatorToLoca(mercator);
+            point.value.x = endItem[0];
+            point.value.y = endItem[1];
+            
+            // 获得高程数据并加入到数组中
+            map.value.ground
+              .queryElevation(point.value, { returnSampleInfo: true })
               .then(function (result) {
                 const z = result.geometry.z;
                 endItem[2] = z;
               });
-            _self.paths.push(endItem);
+            
+            paths.value.push(endItem);
           }
-          // console.log(_self.paths);
-          skeCreate.remove(); //断开事件侦听器的连接
+          
+          skeCreate.remove(); // 断开事件侦听器的连接
         }
+        
         if (event.state === "cancel") {
-          _self.option = false; //关闭内容
-          skeCreate.remove(); //断开事件侦听器的连接
+          option.value = false; // 关闭内容
+          skeCreate.remove(); // 断开事件侦听器的连接
         }
       });
+    };
 
-      // 图形备份以还原已取消的更新过程
-      let updatebackupgraphic;
-
-      const skeUp = _self.sketchViewModel.on("update", function (event) {
-        if (event.state === "start") {
-          updatebackupgraphic = event.graphics[0].clone();
-          _self.paths = [];
-        }
-        if (event.state === "complete") {
-          if (event.aborted) {
-            _self.graphicsLayer.removeAll();
-            // 在开始更新过程之前还原到图形
-            _self.graphicsLayer.remove(event.graphics[0]);
-            _self.graphicsLayer.add(updatebackupgraphic);
-          }
-          //展开内容
-          _self.option = true;
-          // console.log(_self.graphicsLayer.graphics.items);
-          // console.log(_self.graphicsLayer.graphics.items[0].geometry.paths[0]);
-          //获得绘制的折点，并转为经纬度坐标，最后是经纬度坐标的数组[[],[]]
-          const geometryItems =
-            _self.graphicsLayer.graphics.items[0].geometry.paths[0];
-
-          for (var i = 0; i < geometryItems.length; i++) {
-            const mercator = geometryItems[i];
-            const endItem = _self.mercatorToLoca(mercator);
-            _self.point.x = endItem[0];
-            _self.point.y = endItem[1];
-            // console.log(_self.point);
-            //获得高程数据并加入到数组种
-            _self.map.ground
-              .queryElevation(_self.point, { returnSampleInfo: true })
-              .then(function (result) {
-                const z = result.geometry.z;
-                endItem[2] = z;
-              });
-            _self.paths.push(endItem);
-          }
-          // console.log(_self.paths);
-          skeUp.remove(); //断开事件侦听器的连接
-        }
-      });
-    },
-
-    // 递归函数， 实现连续飞行方法
-    // 每次执行两次view.goTo()方法，第一次会将视角转向，第二次转向后会前进到指定位置
-    fly: function (i) {
-      let Speed;
-      Speed = this.getSpeed(this.speed);
-      // console.log(Speed);
-      this.Max = this.paths.length - 2;
-      if (i + 1 == this.paths.length) {
+    // 飞行方法
+    const fly = (value) => {
+      const len = paths.value.length;
+      let num = Math.floor((parseInt(value) / 10) * len);
+      
+      // 如果进度值为0，就飞到起始点
+      if (num == 0) {
+        cam.value = {
+          position: [paths.value[0][0], paths.value[0][1], paths.value[0][2] + 100],
+          heading: 0,
+          tilt: 75,
+        };
+        
+        mapConfig.sceneView.goTo(cam.value, {
+          speedFactor: 0.3,
+          easing: "linear",
+        });
+        
         return;
       }
-      console.log(this.paths);
-      let startPoint = this.paths[i];
-      let endPoint = this.paths[i + 1];
-      let heading = this.calcHeading(
-        startPoint[0],
-        startPoint[1],
-        endPoint[0],
-        endPoint[1]
+      
+      if (num >= len) num = len - 1;
+      
+      // 获得两个点之间的偏转角、倾斜角并作为camera的值
+      const heading = calcBearing(
+        paths.value[num - 1][0],
+        paths.value[num - 1][1],
+        paths.value[num][0],
+        paths.value[num][1]
       );
-      let startPointH = startPoint[2] + 100;
-      let endPointH = endPoint[2] + 100;
-      let tilt = this.calcTilt(
-        startPoint[0],
-        startPoint[1],
-        startPointH,
-        endPoint[0],
-        endPoint[1],
-        endPointH
-      );
-      this.schedule = i;
-      // console.log("拐弯", i);
-      // console.log(startPoint, endPoint);
-      // console.log(heading, tilt);
-      this.cam = this.mapConfig.sceneView.camera.clone();
-      this.cam.heading = heading;
-      this.cam.tilt = tilt;
-      this.cam.position = {
-        longitude: startPoint[0],
-        latitude: startPoint[1],
-        z: startPoint[2] + 100,
-        // spatialReference: { wkid: 4326 }
+      
+      cam.value = {
+        position: [paths.value[num][0], paths.value[num][1], paths.value[num][2] + 100],
+        heading: heading,
+        tilt: 75,
       };
+      
+      mapConfig.sceneView.goTo(cam.value, {
+        speedFactor: getSpeed(speed.value),
+        easing: "linear",
+      });
+    };
 
-      this.mapConfig.sceneView
-        .goTo(this.cam, {
-          speedFactor: Speed,
-          easing: "linear",
-        })
-        .then(() => {
-          // console.log("前进", i);
-          this.cam.position = {
-            longitude: endPoint[0],
-            latitude: endPoint[1],
-            z: endPoint[2] + 100,
-            // spatialReference: { wkid: 4326 }
-          };
-          return this.mapConfig.sceneView.goTo(this.cam, {
-            speedFactor: 0.2,
-            easing: "linear",
-          });
-        })
-        .then(() => {
-          setTimeout(() => {
-            i++;
-            this.fly(i);
-          }, 50);//原来是1500
-        });
-    },
-
-    //计算距离
-    calcDistance: function (lon1, lat1, lon2, lat2) {
-      let radlat1 = (lat1 * Math.PI) / 180.0;
-      let radlat2 = (lat2 * Math.PI) / 180.0;
-      let a = radlat1 - radlat2;
-      let b = (lon1 * Math.PI) / 180.0 - (lon2 * Math.PI) / 180.0;
+    // 计算距离
+    const calcDistance = (lon1, lat1, lon2, lat2) => {
+      const radLon1 = (lon1 * Math.PI) / 180.0;
+      const radLat1 = (lat1 * Math.PI) / 180.0;
+      const radLon2 = (lon2 * Math.PI) / 180.0;
+      const radLat2 = (lat2 * Math.PI) / 180.0;
+      
+      // 地球半径
+      const earthR = 6371000.0;
+      
       let distance =
-        2 *
-        6378137.0 *
-        Math.asin(
-          Math.sqrt(
-            Math.pow(Math.sin(a / 2), 2) +
-              Math.cos(radlat2) *
-                Math.cos(radlat2) *
-                Math.pow(Math.sin(b / 2), 2)
-          )
-        );
+        Math.acos(
+          Math.sin(radLat1) * Math.sin(radLat2) +
+          Math.cos(radLat1) * Math.cos(radLat2) * Math.cos(radLon1 - radLon2)
+        ) * earthR;
+        
       return distance;
-    },
+    };
 
-    // 计算偏北角，0指向正北，90指向正东，顺时针旋转
-    calcHeading: function (lon1, lat1, lon2, lat2) {
-      let radlat1 = (lat1 * Math.PI) / 180.0;
-      let radlat2 = (lat2 * Math.PI) / 180.0;
-      let radlon1 = (lon1 * Math.PI) / 180.0;
-      let radlon2 = (lon2 * Math.PI) / 180.0;
-      let y = Math.sin(radlon2 - radlon1) * Math.cos(radlat2);
-      let x =
-        Math.cos(radlat1) * Math.sin(radlat2) -
-        Math.sin(radlat1) * Math.cos(radlat2) * Math.cos(radlon2 - radlon1);
-      let bearing = (Math.atan2(y, x) * 180.0) / Math.PI;
-      return bearing < 0 ? bearing + 360.0 : bearing;
-    },
+    // 方位角的计算 heading  正北为0， 顺时针增加， 范围0-360
+    const calcBearing = (lon1, lat1, lon2, lat2) => {
+      const radLon1 = (lon1 * Math.PI) / 180.0;
+      const radLat1 = (lat1 * Math.PI) / 180.0;
+      const radLon2 = (lon2 * Math.PI) / 180.0;
+      const radLat2 = (lat2 * Math.PI) / 180.0;
+      
+      const calcResult =
+        Math.atan2(
+          Math.sin(radLon2 - radLon1) * Math.cos(radLat2),
+          Math.cos(radLat1) * Math.sin(radLat2) -
+          Math.sin(radLat1) * Math.cos(radLat2) * Math.cos(radLon2 - radLon1)
+        ) *
+        (180.0 / Math.PI);
+        
+      const bearing = (calcResult + 360.0) % 360.0;
+      return bearing;
+    };
 
-    //沿着偏北角的方向向后退
-    calcReturn: function (lon, lat, bearing) {
+    // 在指定经纬度点朝向某个方位偏离一定距离的点的位置
+    const calcReturn = (lon, lat, bearing) => {
       const lonLat = [];
+      
       if (bearing < 90 || bearing >= 0) {
         lon = lon - 0.00214583333 * Math.cos((bearing * Math.pI) / 180.0);
         lat = lat - 0.00163888889 * Math.sin((bearing * Math.pI) / 180.0);
@@ -372,18 +304,20 @@ export default {
           lat + 0.00163888889 * Math.sin(((360.0 - bearing) * Math.pI) / 180.0);
         lonLat.push(lon, lat);
       }
+      
       return lonLat;
-    },
+    };
 
     // 计算俯仰角， 90度时平行于水平面，0度时自上向下垂直俯视， 180度时自下向上仰视
-    calcTilt: function (lon1, lat1, alt1, lon2, lat2, alt2) {
-      let distance = this.calcDistance(lon1, lat1, lon2, lat2);
+    const calcTilt = (lon1, lat1, alt1, lon2, lat2, alt2) => {
+      let distance = calcDistance(lon1, lat1, lon2, lat2);
       let angle = (Math.atan2(alt2 - alt1, distance) * 180.0) / Math.PI;
       let tilt = angle + 77;
       return tilt;
-    },
-    //获得飞行速度
-    getSpeed: function (speed) {
+    };
+    
+    // 获得飞行速度
+    const getSpeed = (speed) => {
       if (speed == 0) {
         return 0.6;
       } else if (speed == 1) {
@@ -401,10 +335,10 @@ export default {
       } else if (speed == 6) {
         return 10;
       }
-    },
+    };
 
     // 墨卡托转经纬度坐标
-    mercatorToLoca: function (mercator) {
+    const mercatorToLoca = (mercator) => {
       var lonlat = [];
       var x = (mercator[0] / 20037508.34) * 180;
       var y = (mercator[1] / 20037508.34) * 180;
@@ -414,33 +348,55 @@ export default {
       lonlat[0] = x;
       lonlat[1] = y;
       return lonlat;
-    },
+    };
 
-    //清除按钮
-    clean: function () {
-      const _self = this;
-      _self.graphicsLayer.removeAll();
-      _self.paths = [];
-      _self.schedule = "0";
-    },
+    // 清除按钮
+    const clean = () => {
+      graphicsLayer.value.removeAll();
+      paths.value = [];
+      schedule.value = "0";
+    };
 
-    //回到初始视图
-    home:function(){
-      this.homeCam = {
-                position: [113.75665604199996, 25.04682589249998, 180],
-                heading: 255,
-                tilt: 80,
-              };
-      this.mapConfig.sceneView
-        .goTo(this.homeCam, {
+    // 回到初始视图
+    const home = () => {
+      homeCam.value = {
+        position: [113.75665604199996, 25.04682589249998, 180],
+        heading: 255,
+        tilt: 80,
+      };
+      
+      mapConfig.sceneView
+        .goTo(homeCam.value, {
           speedFactor: 0.3,
           easing: "linear",
-        })
-    }
-  },
-  mounted: function () {
-    this._createMapView();
-  },
+        });
+    };
+
+    onMounted(() => {
+      _createMapView();
+    });
+
+    return {
+      map,
+      mapConfig,
+      graphicsLayer,
+      option,
+      sketchViewModel,
+      point,
+      schedule,
+      Max,
+      paths,
+      cam,
+      speed,
+      tickLabels,
+      homeCam,
+      ccWidget,
+      creatSke,
+      fly,
+      clean,
+      home
+    };
+  }
 };
 </script>
 

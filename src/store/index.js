@@ -1,6 +1,6 @@
-
 /* import Vue from 'vue'//用cdn的时候要注释掉
 import Vuex from 'vuex'//用cdn的时候要注释掉 */
+import { createStore } from 'vuex';
 import { reqMeterial,
    reqGetGroupAssess,
     reqGetDDL,
@@ -11,7 +11,7 @@ import { reqMeterial,
 /* Vue.use(Vuex)//用cdn的时候要注释掉 */
 //创建状态管理模式核心store（仓库）
 /* global Vuex */
-const store = new Vuex.Store({
+const store = createStore({
   state: {
     loginState: false,
     userName: "",

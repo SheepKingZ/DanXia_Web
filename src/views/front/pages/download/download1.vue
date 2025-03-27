@@ -40,66 +40,60 @@
 </template>
 
 <script>
-
-
+import { ref, reactive, onMounted } from 'vue';
 
 export default {
-  name:"download",
-  data() {
-    return {
-      selectedItem: null,
-      items: [],//存了response
-      subjectItem:[],//每个元素代表每个科目的
-      childItems: [],
-      pSrc: "",
-    };
-  },
-  methods: {
-    //加载的目录
-    loadClassList() {
-    const res = JSON.parse(localStorage.getItem('meterial'));
-
-    this.items=[]
-    for (let i = 0; i < res.length; i++) {
-      // 将条件检查移到外层循环，只有当_id包含'实习资料'时，才处理内层的info
-      if(res[i]._id.indexOf('实习资料') !== -1) {
-        for(let j = 0; j < res[i].info.length; j++) {
-          this.items.push({
-            title: res[i].info[j].topic, // 应从res[i]访问info
-            pdf: res[i].info[j].pdf, // 同上
-            time:Date.parse(res[i].info[j].uploadTime)
-          });
+  name: "download",
+  setup() {
+    const selectedItem = ref(null);
+    const items = ref([]);
+    const subjectItem = ref([]);
+    const childItems = ref([]);
+    const pSrc = ref("");
+    
+    // 加载目录
+    const loadClassList = () => {
+      const res = JSON.parse(localStorage.getItem('meterial'));
+      
+      items.value = [];
+      for (let i = 0; i < res.length; i++) {
+        // 将条件检查移到外层循环，只有当_id包含'实习资料'时，才处理内层的info
+        if(res[i]._id.indexOf('实习资料') !== -1) {
+          for(let j = 0; j < res[i].info.length; j++) {
+            items.value.push({
+              title: res[i].info[j].topic,
+              pdf: res[i].info[j].pdf,
+              time: Date.parse(res[i].info[j].uploadTime)
+            });
+          }
         }
       }
-    }
-    this.items.sort(function(a, b) {
-      return b.time - a.time;
-    })
-    if(this.items.length > 0) {
-      this.pSrc = this.items[0].pdf; // 设置pSrc为第一个PDF的路径
-    }
-  },
-
-
-    /* loadPDF() {
-      //baseurl ：pdf存放的文件路径，可以是本地的，也可以是远程，这个是远程的，亲测可以用
-      this.pSrc = "https://scaugis.top:3007/PDF/fangfa/yanshi.pdf";
-      //ie有缓存加个随机数解决  + '?r=' + new Date()
-      // let pSrc = baseurl + '?r=' + new Date();
-      // this.pSrc =
-      //   "../../../../../pdfjs-2.6.347-dist/web/viewer.html?file=" + "unit1.pdf";
-    }, */
-
-  },
-
-  mounted() {
-    this.loadClassList();
-
-  },
+      
+      items.value.sort(function(a, b) {
+        return b.time - a.time;
+      });
+      
+      if(items.value.length > 0) {
+        pSrc.value = items.value[0].pdf; // 设置pSrc为第一个PDF的路径
+      }
+    };
+    
+    onMounted(() => {
+      loadClassList();
+    });
+    
+    return {
+      selectedItem,
+      items,
+      subjectItem,
+      childItems,
+      pSrc
+    };
+  }
 };
 </script>
-<style>
 
+<style>
 #r {
   min-height: 900px;
   min-width: 80%;

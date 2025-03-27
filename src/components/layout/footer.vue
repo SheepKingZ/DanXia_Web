@@ -16,21 +16,21 @@
             <v-list flat color="transparent">
               <v-subheader class="text-h6">往年回顾</v-subheader>
               <p>
-                <button @click="checkVideoFun()">
+                <button @click="checkVideoFun">
                   2021级生态学专业自然地理学野外综合实习</button
                 ><br />
-                <button @click="checkVideoFun1()">
+                <button @click="checkVideoFun1">
                   2022级地理信息科学专业地理综合实习</button
                 ><br />
               </p>
               <!-- 外层的遮罩 v-if用来控制显示隐藏 点击事件用来关闭弹窗 -->
               <div
                 class="mask"
-                v-if="videoState == true"
+                v-if="videoState"
                 @click="masksCloseFun"
               ></div>
               <!-- 弹窗 -->
-              <div class="videomasks" v-if="videoState == true">
+              <div class="videomasks" v-if="videoState">
                 <!-- 视频：h5的视频播放video -->
                 <video
                   :src="videoSrc"
@@ -44,11 +44,11 @@
               </div>
               <div
                 class="mask"
-                v-if="videoState1 == true"
+                v-if="videoState1"
                 @click="masksCloseFun1"
               ></div>
               <!-- 弹窗 -->
-              <div class="videomasks" v-if="videoState1 == true">
+              <div class="videomasks" v-if="videoState1">
                 <!-- 视频：h5的视频播放video -->
                 <video
                   :src="videoSrc1"
@@ -60,40 +60,6 @@
                   您的浏览器不支持 video 标签。
                 </video>
               </div>
-              <!-- <v-list-item-group color="primary">
-                <v-list-item
-                  v-for="(item, i) in bofang"
-                  :key="i"
-                  :href="item.href"
-                  dense
-                  target="_black"
-                >
-                  <v-list-item-content>
-                    
-                    <v-list-item-title
-                      class="text-body-1"
-                      v-text="item.text"
-                    ></v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list-item-group>
-              <v-list-item-group color="primary">
-                <v-list-item
-                  v-for="(item, i) in bofang"
-                  :key="i"
-                  :href="item.href"
-                  dense
-                  target="_black"
-                >
-                  <v-list-item-content>
-                    
-                    <v-list-item-title
-                      class="text-body-1"
-                      v-text="item.text"
-                    ></v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list-item-group> -->
             </v-list>
           </v-col>
         </v-row>
@@ -115,36 +81,51 @@
 </template>
 
 <script>
+import { ref } from 'vue';
+
 export default {
-  data() {
-    return {
-      videoSrc: "video/生态实习视频.mp4",
-      videoSrc1: "video/实习视频.mp4",
-      videoState: false,
-      videoState1: false,
-    };
-  },
-  methods: {
-    cimsInputClick() {
+  setup() {
+    const videoSrc = ref("video/生态实习视频.mp4");
+    const videoSrc1 = ref("video/实习视频.mp4");
+    const videoState = ref(false);
+    const videoState1 = ref(false);
+    
+    const cimsInputClick = () => {
       window.location.href = "http://dxs.sg.gov.cn/";
-    },
-    bofang() {},
-    //点击按钮出现弹窗播放视频
-    checkVideoFun() {
-      this.videoState = true;
-    },
-    masksCloseFun() {
-      this.videoState = false;
-    },
-    checkVideoFun1() {
-      this.videoState1 = true;
-    },
-    masksCloseFun1() {
-      this.videoState1 = false;
-    },
-  },
+    };
+    
+    // 点击按钮出现弹窗播放视频
+    const checkVideoFun = () => {
+      videoState.value = true;
+    };
+    
+    const masksCloseFun = () => {
+      videoState.value = false;
+    };
+    
+    const checkVideoFun1 = () => {
+      videoState1.value = true;
+    };
+    
+    const masksCloseFun1 = () => {
+      videoState1.value = false;
+    };
+    
+    return {
+      videoSrc,
+      videoSrc1,
+      videoState,
+      videoState1,
+      cimsInputClick,
+      checkVideoFun,
+      masksCloseFun,
+      checkVideoFun1,
+      masksCloseFun1
+    };
+  }
 };
 </script>
+
 <style scoped>
 .mask {
   position: fixed;

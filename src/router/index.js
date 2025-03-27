@@ -1,7 +1,10 @@
 /* import Vue from "vue";//用cdn的时候要注释掉
 import VueRouter from "vue-router";//用cdn的时候要注释掉，路由引入 */
+import { createRouter, createWebHashHistory } from "vue-router"
+import { defineAsyncComponent } from 'vue'
 import Guide from "../views/Guide.vue";
 import t1 from "../views/front/pages/learning/t1.vue";
+import HelloWorld from "../components/HelloWorld.vue";
 import NProgress from 'nprogress';
 //路由安装注册
 /* Vue.use(VueRouter);//路由插件初始化//用cdn的时候要注释掉 */
@@ -10,12 +13,20 @@ import NProgress from 'nprogress';
 const routes = [
   //重定向，让项目跑起来的时候，访问/，立马让他定向到首页
   {
-    path:'*',
-    redirect:"/login",
+    path: '/:pathMatch(.*)*',
+    redirect: "/hello",
+  },
+  {
+    path: "/hello",
+    name: "HelloWorld",
+    component: HelloWorld,
+    meta: {
+      auth: false
+    }
   },
   {
     path: "/front",
-    component: () => import("../components/root/front"),
+    component: defineAsyncComponent(() => import("../components/root/front")),
     children: [
       {
         path: "/front",
@@ -29,14 +40,14 @@ const routes = [
   },
   {
     path: "/Login",
-    component: () => import("../components/login.vue"),
+    component: defineAsyncComponent(() => import("../components/login.vue")),
     meta: {
       auth: false
     }
   },
   {
     path: "/front/pages",
-    component: () => import("../components/root/front"),
+    component: defineAsyncComponent(() => import("../components/root/front")),
     meta: {
       auth: false
     },
@@ -44,7 +55,7 @@ const routes = [
       {
         path: "/front/pages/download/download1",
         name: "front-pages-download-download1",
-        component: () => import("../views/front/pages/download/download1.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/download/download1.vue")),
         meta: {
           auth: true
         }
@@ -52,7 +63,7 @@ const routes = [
       {
         path: "/front/pages/route/route",
         name: "front-pages-route-route",
-        component: () => import("../views/front/pages/route/route.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/route/route.vue")),
         meta: {
           auth: true
         }
@@ -60,7 +71,7 @@ const routes = [
       {
         path: "/front/pages/route/route2",
         name: "front-pages-route-route2",
-        component: () => import("../views/front/pages/route/route2.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/route/route2.vue")),
         meta: {
           auth: true
         }
@@ -68,7 +79,7 @@ const routes = [
       {
         path: "/front/pages/route/route3",
         name: "front-pages-route-route3",
-        component: () => import("../views/front/pages/route/route3.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/route/route3.vue")),
         meta: {
           auth: true
         }
@@ -76,7 +87,7 @@ const routes = [
       {
         path: "/front/pages/fly/fly",
         name: "front-pages-fly-fly",
-        component: () => import("../views/front/pages/fly/fly.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/fly/fly.vue")),
         meta: {
           auth: true
         }
@@ -84,7 +95,7 @@ const routes = [
       {
         path: "/front/pages/fly/fly2",
         name: "front-pages-fly-fly2",
-        component: () => import("../views/front/pages/fly/fly2.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/fly/fly2.vue")),
         meta: {
           auth: false
         }
@@ -92,7 +103,7 @@ const routes = [
       {
         path: "/front/pages/projectStudies/visible",
         name: "front-pages-projectStudies-visible",
-        component: () => import("../views/front/pages/projectStudies/visible.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/projectStudies/visible.vue")),
         meta: {
           auth: true
         }
@@ -100,7 +111,7 @@ const routes = [
       {
         path: "/front/pages/projectStudies/SectionLine",
         name: "front-pages-projectStudies-SectionLine",
-        component: () => import("../views/front/pages/projectStudies/SectionLine.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/projectStudies/SectionLine.vue")),
         meta: {
           auth: true
         }
@@ -108,7 +119,7 @@ const routes = [
       {
         path: "/front/pages/projectStudies/pathAnalysis",
         name: "front-pages-projectStudies-pathAnalysis",
-        component: () => import("../views/front/pages/projectStudies/pathAnalysis.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/projectStudies/pathAnalysis.vue")),
         meta: {
           auth: true
         }
@@ -116,7 +127,7 @@ const routes = [
       {
         path: "/front/pages/person/personalMa",
         name: "front-pages-person-personalMa",
-        component: () => import("../views/front/pages/person/personalMa.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/person/personalMa.vue")),
         meta: {
           auth: true
         }
@@ -124,7 +135,7 @@ const routes = [
       {
         path: "/front/pages/person/logout",
         name: "front-pages-person-logout",
-        component: () => import("../views/front/pages/person/logout.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/person/logout.vue")),
         meta: {
           auth: true
         }
@@ -132,7 +143,7 @@ const routes = [
       {
         path: "/front/pages/learning/ClassIntro/:currentClass",
         name: "ClassIntro",
-        component: () => import("../views/front/pages/learning/ClassIntro.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/learning/ClassIntro.vue")),
         meta: {
           auth: true
         }
@@ -141,7 +152,7 @@ const routes = [
       {
         path: "/front/pages/learning/Class/:currentClass",
         name: "Class",
-        component: () => import("../views/front/pages/learning/Class.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/learning/Class.vue")),
         meta: {
           auth: true
         }
@@ -151,7 +162,7 @@ const routes = [
       {
         path: "/front/pages/learning/FirstView",
         name: "FirstView",
-        component: () => import("../views/front/pages/learning/FirstView.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/learning/FirstView.vue")),
         meta: {
           auth: true
         }
@@ -160,7 +171,7 @@ const routes = [
       {
         path: "/front/pages/learning/video",
         name: "video",
-        component: () => import("../views/front/pages/learning/video.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/learning/video.vue")),
         meta: {
           auth: true
         }
@@ -169,7 +180,7 @@ const routes = [
       {
         path: "/front/pages/learning/Disscus",
         name: "Disscus",
-        component: () => import("../views/front/pages/learning/Disscus.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/learning/Disscus.vue")),
         meta: {
           auth: true
         }
@@ -178,7 +189,7 @@ const routes = [
       {
         path: "/front/pages/learning/DisscusList",
         name: "DisscusList",
-        component: () => import("../views/front/pages/learning/DisscusList.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/learning/DisscusList.vue")),
         meta: {
           auth: true
         }
@@ -187,7 +198,7 @@ const routes = [
       {
         path: "/front/pages/learning/ClassList/:currentClass",
         name: "ClassList",
-        component: () => import("../views/front/pages/learning/ClassList.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/learning/ClassList.vue")),
         meta: {
           auth: true
         }
@@ -198,7 +209,7 @@ const routes = [
       {
         path: "/front/pages/teacherpage/StudentInfo",
         name: "StudentInfo",
-        component: () => import("../views/front/pages/teacherpage/StudentInfo.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/teacherpage/StudentInfo.vue")),
         meta: {
           auth: true
         }
@@ -207,7 +218,7 @@ const routes = [
       {
         path: "/front/pages/teacherpage/StudentMark",
         name: "StudentMark",
-        component: () => import("../views/front/pages/teacherpage/StudentMark.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/teacherpage/StudentMark.vue")),
         meta: {
           auth: true
         }
@@ -216,7 +227,7 @@ const routes = [
       {
         path: "/front/pages/teacherpage/Update",
         name: "Update",
-        component: () => import("../views/front/pages/teacherpage/Update.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/teacherpage/Update.vue")),
         meta: {
           auth: true
         }
@@ -226,7 +237,7 @@ const routes = [
       {
         path: "/front/pages/report/groupReport",
         name: "groupReport",
-        component: () => import("../views/front/pages/report/groupReport.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/report/groupReport.vue")),
         meta: {
           auth: true
         }
@@ -235,7 +246,7 @@ const routes = [
       {
         path: "/front/pages/report/studentReport",
         name: "studentReport",
-        component: () => import("../views/front/pages/report/studentReport.vue"),
+        component: defineAsyncComponent(() => import("../views/front/pages/report/studentReport.vue")),
         meta: {
           auth: true
         }
@@ -247,7 +258,7 @@ const routes = [
   {
     // 修改登录页面
     path: "/front",
-    component: () => import("../components/root/front"),
+    component: defineAsyncComponent(() => import("../components/root/front")),
     children: [
       {
         path: "/learning",
@@ -262,9 +273,11 @@ const routes = [
   
 ];
 
-const router = new VueRouter({
-  routes,
-});
+const router = createRouter({
+  history: createWebHashHistory(),
+  routes
+})
+
 router.afterEach(() => {
   if (NProgress.isStarted())
   {
@@ -272,5 +285,6 @@ router.afterEach(() => {
   }
   
 });
+
 export default router;
 

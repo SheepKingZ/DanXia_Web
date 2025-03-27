@@ -1,9 +1,9 @@
 <template>
   <div>
     <v-navigation-drawer
-      v-if="!$vuetify.breakpoint.smAndUp"
+      v-if="!mdAndUp"
       v-model="drawer"
-      :clipped="$vuetify.breakpoint.lgAndUp"
+      :clipped="lgAndUp"
       app
       color="primary"
       dark
@@ -29,7 +29,7 @@
       app
       flat
       class="appbar"
-      :clipped-left="$vuetify.breakpoint.lgAndUp"
+      :clipped-left="lgAndUp"
       color="primary"
       dark
     >
@@ -52,11 +52,11 @@
             </v-toolbar-title>
 
             <v-menu offset-y open-on-hover>
-              <template v-slot:activator="{ on }">
+              <template #activator="{ props }">
                 <v-btn
                   color="primary"
                   dark
-                  v-on="on"
+                  v-bind="props"
                   class="ml-3 text-capitalize"
                   depressed
                   large
@@ -78,11 +78,11 @@
             </v-menu>
 
             <v-menu offset-y open-on-hover>
-              <template v-slot:activator="{ on }">
+              <template #activator="{ props }">
                 <v-btn
                   color="primary"
                   dark
-                  v-on="on"
+                  v-bind="props"
                   class="ml-3 text-capitalize"
                   depressed
                   large
@@ -105,11 +105,11 @@
             </v-menu>
 
             <v-menu offset-y open-on-hover>
-              <template v-slot:activator="{ on }">
+              <template #activator="{ props }">
                 <v-btn
                   color="primary"
                   dark
-                  v-on="on"
+                  v-bind="props"
                   class="ml-3 text-capitalize"
                   depressed
                   large
@@ -131,11 +131,11 @@
             </v-menu>
 
             <v-menu offset-y open-on-hover>
-              <template v-slot:activator="{ on }">
+              <template #activator="{ props }">
                 <v-btn
                   color="primary"
                   dark
-                  v-on="on"
+                  v-bind="props"
                   class="ml-3 text-capitalize"
                   depressed
                   large
@@ -158,11 +158,11 @@
             </v-menu>
 
             <v-menu offset-y open-on-hover>
-              <template v-slot:activator="{ on }" >
+              <template #activator="{ props }">
                 <v-btn
                   color="primary"
                   dark
-                  v-on="on"
+                  v-bind="props"
                   class="ml-3 text-capitalize"
                   depressed
                   large
@@ -185,13 +185,13 @@
             </v-menu>
 
           </v-col>
-          <v-col class="text-right" v-if="$vuetify.breakpoint.smAndUp">
+          <v-col class="text-right" v-if="mdAndUp">
             <v-menu offset-y open-on-hover>
-              <template v-slot:activator="{ on }">
+              <template #activator="{ props }">
                 <v-btn
                   color="primary"
                   dark
-                  v-on="on"
+                  v-bind="props"
                   class="ml-3 text-capitalize"
                   depressed
                   large
@@ -223,77 +223,120 @@
 </template>
 
 <script>
+import { ref, reactive, onMounted, computed } from 'vue';
+import { useDisplay } from 'vuetify';
+
 export default {
-  data: () => ({
-    stuName:sessionStorage.getItem("userName"),
-    isteacher:'',
-    isstudent:'',
-    isuser:'',
-    visiter:'',
-    drawer: null,
-    Link: true,
-    routePages: [
+  name: "Appbar",
+  setup() {
+    const display = useDisplay();
+    
+    // 使用computed获取断点值
+    const mdAndUp = computed(() => display.mdAndUp.value);
+    const lgAndUp = computed(() => display.lgAndUp.value);
+    
+    // 响应式状态
+    const drawer = ref(false);
+    const Link = ref(true);
+    const login = ref(true);
+    const isuser = ref(false);
+    const visiter = ref(false);
+    const isteacher = ref(false);
+    const isstudent = ref(false);
+    
+    // 菜单数据
+    const btnItems = reactive([
       {
-        title: "实习路线",
+        text: "路线学习",
         to: "/front/pages/route/route",
       },
       {
-        title: "飞行浏览",
+        text: "飞行浏览",
         to: "/front/pages/fly/fly",
       },
-    ],
-    coursewares: [
       {
-        title: "实习资料",
-        to: "/front/pages/download/download1",
+        text: "学习资料",
+        to: "/front/pages/learning/FirstView",
       },
-       {
+      {
+        text: "讨论区",
+        to: "/front/pages/learning/Disscus",
+      },
+      {
+        text: "个人空间",
+        to: "/front/pages/person/personalMa",
+      },
+    ]);
+    
+    const routePages = reactive([
+      {
+        title: "普通视图",
+        to: "/front/pages/route/route",
+      },
+      {
+        title: "线路高程",
+        to: "/front/pages/route/route2",
+      },
+      {
+        title: "实习点详情",
+        to: "/front/pages/route/route3",
+      },
+    ]);
+
+    const flyPages = reactive([
+      {
+        title: "飞行",
+        to: "/front/pages/fly/fly"
+      },
+      {
+        title: "飞行2",
+        to: "/front/pages/fly/fly2",
+      },
+    ]);
+
+    const coursewares = reactive([
+      {
         title: "课程资料",
         to: "/front/pages/learning/FirstView",
       },
-      // {
-      //   title: "专题讨论",
-      //   to: "/front/pages/learning/DisscusList",
-      // }
-    ],
-    projectStudies: [
+    ]);
+
+    const projectStudies = reactive([
       {
         title: "剖面线工具",
         to: "/front/pages/projectStudies/SectionLine",
       },
-      /* {
-        title: "路径分析",
-        to: "/front/pages/projectStudies/pathAnalysis",
-      }, */
       {
         title: "可见性分析",
         to: "/front/pages/projectStudies/visible",
       },
-    ],
-    reportPages: [
+    ]);
+
+    const reportPages = reactive([
       {
         title: "小组报告",
         to: "/front/pages/report/groupReport",
       },
-       {
+      {
         title: "个人感想",
         to: "/front/pages/report/studentReport",
       },
+    ]);
 
-    ],
-    personPages: [
+    const personPages = reactive([
       {
         title: "个人空间",
-        pp_isteacher:true,
-        to:"/front/pages/person/personalMa",
+        pp_isteacher: true,
+        to: "/front/pages/person/personalMa",
       },
       {
         title: "退出登录",
-        pp_isteacher:true,
+        pp_isteacher: true,
         to: "/front/pages/person/logout",
       },
-    ],
-     teacherPages: [
+    ]);
+
+    const teacherPages = reactive([
       {
         title: "学生信息及报告",
         to: "/front/pages/teacherpage/StudentInfo",
@@ -306,36 +349,58 @@ export default {
         title: "资料管理",
         to: "/front/pages/teacherpage/Update",
       },
-    ],
-  }),
-
-  
-  created(){
+    ]);
     
-      let pageS = sessionStorage.isteacher
+    // 生命周期钩子
+    onMounted(() => {
+      const pageS = sessionStorage.getItem("isteacher");
+      const visiterValue = sessionStorage.getItem("isvisiter");
       
-     let visiter = sessionStorage.isvisiter
-     if(visiter=='true'){
-        this.isteacher = false
-        this.isstudent = false
+      if (visiterValue === 'true') {
+        isteacher.value = false;
+        isstudent.value = false;
+        personPages[0].pp_isteacher = false;
+      } else {
+        visiter.value = true;
+        isuser.value = true;
         
-        this.personPages[0].pp_isteacher =false
-      }else{
-        this.visiter = true
-        this.isuser = true
-        if(pageS=='false'){
-        this.isteacher = false
-        this.isstudent = true 
-        
-        // console.log(this.personPages[0].pp_isteacher)
-      }else{
-        this.isteacher = true
-        this.isstudent = false
-        this.personPages[0].pp_isteacher =false
+        if (pageS === 'false') {
+          isteacher.value = false;
+          isstudent.value = true;
+        } else {
+          isteacher.value = true;
+          isstudent.value = false;
+          personPages[0].pp_isteacher = false;
+        }
       }
-       
-      }
+    });
     
+    return {
+      drawer,
+      Link,
+      login,
+      isuser,
+      visiter,
+      isteacher,
+      isstudent,
+      btnItems,
+      routePages,
+      flyPages,
+      coursewares,
+      projectStudies,
+      reportPages,
+      personPages,
+      teacherPages,
+      mdAndUp,
+      lgAndUp
+    };
   }
 };
 </script>
+
+<style>
+.appbar {
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+</style>

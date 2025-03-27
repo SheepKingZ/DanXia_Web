@@ -11,14 +11,18 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue';
 
 export default {
   name: "App",
-  components: {
-    AppBar: () => import("@/components/layout/appbar.vue"),
-    Footer: () => import("@/components/layout/footer.vue"),
-  },
-
-
+  setup() {
+    const AppBar = defineAsyncComponent(() => import("@/components/layout/appbar.vue"));
+    const Footer = defineAsyncComponent(() => import("@/components/layout/footer.vue"));
+    
+    return {
+      AppBar,
+      Footer
+    };
+  }
 };
 </script>

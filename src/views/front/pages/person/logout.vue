@@ -34,7 +34,7 @@
                         class="text-capitalize"
                         large
                         color="information"
-                        @click="$router.back()"
+                        @click="router.back()"
                         >取消</v-btn>
                     </div>
                   </v-col>
@@ -49,18 +49,25 @@
 </template>
 
 <script>
+import { useStore } from 'vuex';
+import { useRouter } from 'vue-router';
+
 export default {
   name: "Login",
-  data() {
-    return {};
-  },
-  methods: {
+  setup() {
+    const store = useStore();
+    const router = useRouter();
     
-    logout() {
-      //将用户信息清空
-      this.$store.commit("loginIn", null);
-      this.$router.push("/Login"); //跳转登录页面
-    },
-  },
+    const logout = () => {
+      // 将用户信息清空
+      store.commit("loginIn", null);
+      router.push("/Login"); // 跳转登录页面
+    };
+    
+    return {
+      router,
+      logout
+    };
+  }
 };
-</script>
+</script> 

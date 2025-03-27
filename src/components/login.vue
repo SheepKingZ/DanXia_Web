@@ -59,6 +59,7 @@
                     type="password"
                     class="mt-6"
                     v-model="pwd"
+                    @keyup.enter="keydown"
                   ></v-text-field>
 
                   <div style="display: inline-flex;">
@@ -66,19 +67,16 @@
                       width="100px"
                       class="mr-1"
                       color="primary"
-                      @click.stop="login()"
-                      @keyup.enter="keydown(e)"
+                      @click="login"
                       :loading="loading"
                       :disabled="loading"
-                      >登录</v-btn
-                    >
+                    >登录</v-btn>
                     <v-btn
                       width="100px"
                       class="ml-1"
                       color="primary"
-                      @click.stop="back()"
-                      >返回</v-btn
-                    >
+                      @click="back"
+                    >返回</v-btn>
                   </div>
                 </v-col>
               </v-row>
@@ -91,24 +89,31 @@
 </template>
 
 <script>
+import { ref, reactive, computed, getCurrentInstance } from 'vue';
+import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
 import axios from "axios";
+
 export default {
   name: "Login",
-  data() {
-    return {
-      loginshow: true,
-      show: false,
-      name: "",
-      pwd: "",
-      checkbox: true,
-      loading: false,
-      isteacher: "",
-      tname: "",
-      err_msg:''
-    };
-  },
-  methods: {
-    GetMaterial() {
+  setup() {
+    const router = useRouter();
+    const store = useStore();
+    const { proxy } = getCurrentInstance();
+
+    // 响应式状态
+    const loginshow = ref(true);
+    const show = ref(false);
+    const name = ref("");
+    const pwd = ref("");
+    const checkbox = ref(true);
+    const loading = ref(false);
+    const isteacher = ref("");
+    const tname = ref("");
+    const err_msg = ref('');
+
+    // 方法
+    const GetMaterial = () => {
       axios({
         method: "get",
         url: "https://danxiagis.top:8081/uploadData/get",
@@ -116,49 +121,58 @@ export default {
         let res = response.data;
         localStorage.setItem("meterial", JSON.stringify(res));
       });
-    },
-    enterlogin() {
-      this.show = true;
-      //this.loginshow = false;
-    },
-    back() {
-      this.show = false;
-      this.loginshow = true;
-    },
-    login() {
-      this.loading = true;
-      // console.log(this.name);
-      // console.log(this.pwd);
-      // console.log(this.$router);
-      //第一个数字判断是不是老师，3是老师
-      let f = this.name.substring(0, 1);
+    };
+
+    const enterlogin = () => {
+      show.value = true;
+    };
+
+    const back = () => {
+      show.value = false;
+      loginshow.value = true;
+    };
+
+    const visiter = () => {
+      sessionStorage.setItem("isvisiter", true);
+      sessionStorage.setItem("userName", "游客");
+      sessionStorage.setItem("loginState", true);
+      router.push("/front");
+    };
+
+    const keydown = (e) => {
+      if (e.keyCode === 13) {
+        login();
+      }
+    };
+
+    const login = () => {
+      loading.value = true;
+      // 第一个数字判断是不是老师，3是老师
+      let f = name.value.substring(0, 1);
       //  教师和学生端判断
       if (f != 3) {
-        sessionStorage.setItem("isteacher", false);
+        sessionStorage.setItem("isteacher", "false");
         axios({
           method: "post",
-          url: "https://danxiagis.top:8081/login/Web/student", //https://danxiagis.top:3005/login/Web/student
-          //data: `Stu_id=${this.name}&Password=${this.pwd}`,
+          url: "https://danxiagis.top:8081/login/Web/student",
           params: {
-            Stu_id: this.name,
-            Password: this.pwd,
+            Stu_id: name.value,
+            Password: pwd.value,
           },
           withCredentials: true,
           rejectUnauthorized: false
         })
           .then((response) => {
-            // console.log(response.data);
-            // console.log(response.data.Name);
             console.log(response);
             let dataObj = response.data;
             console.log("@@@", dataObj);
-            this.err_msg=dataObj.message
-            //返回的学号无错误，即开始处理(后端进行了判断处理)
+            err_msg.value = dataObj.message;
+            
+            // 返回的学号无错误，即开始处理(后端进行了判断处理)
             if (dataObj.name != null) {
-              // console.log(this.$store)
-              //将用户的信息写道sessionStorage中，方便后续需要展示信息时取来用
-              sessionStorage.setItem("isvisiter", false);
-              sessionStorage.setItem("isteacher", false);
+              // 将用户的信息写入sessionStorage中，方便后续需要展示信息时取来用
+              sessionStorage.setItem("isvisiter", "false");
+              sessionStorage.setItem("isteacher", "false");
               sessionStorage.setItem("userName", dataObj.name);
               sessionStorage.setItem("class_name", dataObj.class_name);
               sessionStorage.setItem("group_id", dataObj.group.group_id);
@@ -166,115 +180,95 @@ export default {
               sessionStorage.setItem("group_member", dataObj.group.members);
               sessionStorage.setItem("stu_id", dataObj.Stu_id);
               sessionStorage.setItem("password", dataObj.Password);
-              sessionStorage.setItem("loginState", true);
+              sessionStorage.setItem("loginState", "true");
               if (dataObj.Stu_id == dataObj.group.leader)
-                sessionStorage.setItem("is_leader", true);
-
-              // console.log(sessionStorage);
-              this.$store.state.stuName = dataObj.name;
-              //将用户信息繁缛vuex
-              this.$store.commit("loginIn", dataObj);
-              // console.log(this.$store.state.loginState);
-              // console.log(this.$store.state.currentUser);
-              //去除加载效果
-              this.loading = false;
-              //跳转导航页面
-              this.$router.push("/front");
+                sessionStorage.setItem("is_leader", "true");
+              
+              store.state.stuName = dataObj.name;
+              // 将用户信息放入vuex
+              store.commit("loginIn", dataObj);
+              
+              // 去除加载效果
+              loading.value = false;
+              // 跳转导航页面
+              router.push("/front");
             } else {
-              this.loading = false;
-              this.alert(response.data.message);
+              loading.value = false;
+              alert(response.data.message);
             }
           })
           .catch((error) => {
-            this.loading = false; 
-            console.log('error.data',error);
-            alert(this.err_msg); //错误弹窗
+            loading.value = false; 
+            console.log('error.data', error);
+            alert(err_msg.value); // 错误弹窗
           });
-        //将用户名和密码存在LocalStorage中
-        localStorage.setItem("name", this.name);
-        localStorage.setItem("pwd", this.pwd);
+          
+        // 将用户名和密码存在LocalStorage中
+        localStorage.setItem("name", name.value);
+        localStorage.setItem("pwd", pwd.value);
       }
       // 教师端登录
-      else if (f==3) {
+      else if (f == 3) {
+        sessionStorage.setItem("isteacher", "true");
         axios({
-          url:'https://danxiagis.top:8081/login/smallWeb/teacher',
-          method:'post',
-          params:{
-            Tea_id:this.name,
-            Password:this.pwd
-          },
-          withCredentials: true,
-        }).then(resp=>{
-          let res=resp.data
-          console.log('ressss',res);
-          if (res.name != null)
-          {
-            this.tname=res.name+'老师'
-          
-            sessionStorage.setItem("isteacher", true);
-            sessionStorage.setItem("isvisiter", false);
-            sessionStorage.setItem("userName", this.tname);//教师名字
-            sessionStorage.setItem("id", this.name);//工号
-            sessionStorage.setItem("loginState", true);
-            sessionStorage.setItem("teacheruuid",res._id)
-            localStorage.setItem("name", this.name);//工号
-            localStorage.setItem("pwd", this.pwd);
-
-            this.$store.state.stuName = this.tname;
-            this.loading = false;
-            this.$router.push("/front"); //跳转导航页面
-          }else {
-              this.loading = false;
-              
-              alert(res.message);
-            }
-        }).catch((error) => {
-            this.loading = false; 
-            console.log('error.data',error);
-            alert(this.err_msg); //错误弹窗
-          });
-      } else {
-        alert("登录异常，请检查登录账户"); //错误弹窗
+          url: 'https://danxiagis.top:8081/login/smallWeb/teacher',
+          method: 'post',
+          params: {
+            teacher_id: name.value,
+            Password: pwd.value
+          }
+        }).then(response => {
+          console.log(response);
+          let dataObj = response.data;
+          if (dataObj.name != null) {
+            // 将用户的信息写入sessionStorage中，方便后续需要展示信息时取来用
+            sessionStorage.setItem("isvisiter", "false");
+            sessionStorage.setItem("userName", dataObj.name);
+            sessionStorage.setItem("stu_id", dataObj.teacher_id);
+            sessionStorage.setItem("password", dataObj.Password);
+            sessionStorage.setItem("loginState", "true");
+            
+            store.state.stuName = dataObj.name;
+            store.commit("loginIn", dataObj);
+            
+            // 去除加载效果
+            loading.value = false;
+            // 跳转导航页面
+            router.push("/front");
+          } else {
+            loading.value = false;
+            alert(response.data.message);
+          }
+        }).catch(error => {
+          loading.value = false;
+          console.log(error);
+          alert("请求出错了"); // 错误弹窗
+        });
+        
+        // 将用户名和密码存在LocalStorage中
+        localStorage.setItem("name", name.value);
+        localStorage.setItem("pwd", pwd.value);
       }
-    },
-    keyDown(e) {
-      // 回车则执行登录方法 enter键的ASCII是13
-      if (e.key == "Enter") {
-        this.login(); // 定义的登录方法
-        e.preventDefault(); // 去掉默认的换行
-      }
-    },
+    };
 
-    visiter() {
-      this.loading = true;
-      let vname = "游客";
-      sessionStorage.setItem("loginState", true);
-      sessionStorage.setItem("isvisiter", true);
-      sessionStorage.setItem("userName", vname);
-      this.$router.replace("/front");
-    },
-
-    created() {
-      for (var i = localStorage.length - 1; i >= 0; i--) {
-        if (localStorage.key(i) == "name") {
-          this.name = localStorage.getItem(localStorage.key(i));
-        } else if (localStorage.key(i) == "pwd") {
-          this.pwd = localStorage.getItem(localStorage.key(i));
-        }
-      }
-    },
-  },
-
-  /* 不用存到仓库里，主要是数据处理 */
-  mounted() {
-    this.GetMaterial();
-    // 绑定监听事件
-    window.addEventListener("keydown", this.keyDown);
-  },
-  destroyed() {
-    // 销毁事件
-    window.removeEventListener("keydown", this.keyDown, false);
-  },
+    return {
+      loginshow,
+      show,
+      name,
+      pwd,
+      checkbox,
+      loading,
+      isteacher,
+      tname,
+      err_msg,
+      GetMaterial,
+      enterlogin,
+      back,
+      login,
+      visiter,
+      keydown
+    };
+  }
 };
 </script>
 

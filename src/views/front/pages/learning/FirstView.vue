@@ -89,8 +89,94 @@
     </v-main>
   </v-img>
 </template>
-<style>
 
+<script>
+import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import axios from 'axios';
+
+export default {
+  name: "FirstView",
+  setup() {
+    const router = useRouter();
+    
+    const GetMaterial = () => {
+      axios({
+        method: "get",
+        url: "https://danxiagis.top:8081/uploadData/get",
+      }).then(response => {
+        let res = response.data;
+        if (localStorage.getItem('meterial') != null && localStorage.getItem('meterial') != JSON.stringify(res)) {
+          localStorage.setItem('meterial', JSON.stringify(res));
+          console.log('不相同', JSON.parse(localStorage.getItem('meterial')));
+        }
+      });
+    };
+    
+    const ClassPage1 = () => {
+      router.push({
+        name: "ClassList",
+        params: {
+          currentClass: "自然地理",
+        },
+      });
+    };
+    
+    const ClassPage2 = () => {
+      router.push({
+        name: "ClassList",
+        params: {
+          currentClass: "人文与经济地理",
+        },
+      });
+    };
+    
+    const ClassPage3 = () => {
+      router.push({
+        name: "ClassList",
+        params: {
+          currentClass: "地理信息系统原理",
+        },
+      });
+    };
+    
+    const ClassPage4 = () => {
+      router.push({
+        name: "ClassList",
+        params: {
+          currentClass: "地图学",
+        },
+      });
+    };
+    
+    const ClassPage5 = () => {
+      alert("暂未开放，敬请期待");
+      /* router.push({
+        name: "ClassList",
+        params: {
+          currentClass: "其他",
+        },
+      }); */
+    };
+    
+    onMounted(() => {
+      if (sessionStorage.getItem('isteacher') == 'true' ? false : true)
+        GetMaterial();
+    });
+    
+    return {
+      GetMaterial,
+      ClassPage1,
+      ClassPage2,
+      ClassPage3,
+      ClassPage4,
+      ClassPage5
+    };
+  }
+};
+</script>
+
+<style>
 #text {
   color: rgb(255, 255, 255);
   font-size: 25px;
@@ -110,82 +196,5 @@
 
 #b:not(.on-hover) {
   opacity: 0.6;
- 
-
- }
-
-</style>
-<script>
-import axios from 'axios';
-export default {
-  name: "FirstView",
-  data: () => ({}),
-  mounted(){
-    if(sessionStorage.getItem('isteacher')=='true'?false:true)
-        this.GetMaterial()
-    },
-  methods:{
-   GetMaterial(){
-      axios({
-          method: "get",
-          url: "https://danxiagis.top:8081/uploadData/get",
-      }).then(response=>{
-        let res=response.data
-        if(localStorage.getItem('meterial')!=null&&localStorage.getItem('meterial')!=JSON.stringify(res))
-        {
-          localStorage.setItem('meterial',JSON.stringify(res))
-          console.log('不相同',JSON.parse(localStorage.getItem('meterial')));
-    
-        }
-        
-      })
-    },  
-    ClassPage1(){  
-    this.$router.push({
-        name: "ClassList",
-        params: {
-          currentClass: "自然地理",
-        },
-           });
-    },
-    ClassPage2(){
-     
-     this.$router.push({
-         name: "ClassList",
-         params: {
-           currentClass: "人文与经济地理",  
-         },
-            });
-    },
-    ClassPage3(){
-     
-     this.$router.push({
-         name: "ClassList",
-         params: {
-           currentClass: "地理信息系统原理",  
-         },
-            });
-    },
- 
-    ClassPage4(){
-     
-     this.$router.push({
-         name: "ClassList",
-         params: {
-           currentClass: "地图学",  
-         },
-            });
-    },
-    ClassPage5(){
-    alert("暂未开放，敬请期待")
-     /* this.$router.push({
-         name: "ClassList",
-         params: {
-           currentClass: "其他",  
-         },
-            }); */
-    },
-  
-  },
-};
-</script>
+}
+</style> 

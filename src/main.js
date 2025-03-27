@@ -1,63 +1,50 @@
 /* import Vue from 'vue'//用cdn的时候要注释掉 */
 /* global Vue */
-import './plugins/axios'
+import { createApp } from 'vue'
 import App from './App.vue'
-import vuetify from './plugins/vuetify';
 import router from "./router";
-
 import store from "@/store";
+import axiosPlugin from './plugins/axios'
 
+// Vuetify
+import 'vuetify/styles'
+import '@mdi/font/css/materialdesignicons.css'
+import vuetify from './plugins/vuetify';
 
-import VideoPlayer from 'vue-video-player';
-require('video.js/dist/video-js.css')
-require('vue-video-player/src/custom-theme.css')
+// 视频播放相关
 import Video from 'video.js'
 import 'video.js/dist/video-js.css'
-Vue.prototype.$video = Video
-Vue.use(VideoPlayer)
-import 'videojs-contrib-hls'
+// videojs-contrib-hls 库已弃用，现代版本的video.js已内置HLS支持
 
+// 图片查看器
 import Viewer from 'v-viewer';
 import 'viewerjs/dist/viewer.css';
-Vue.component("Viewer", Viewer);
-/* import {reqMeterial} from './api'
-reqMeterial() */
+
+// 懒加载
 import VueLazyload from 'vue-lazyload'
 import circle from './assets/loading.gif'
-Vue.use(VueLazyload,{
-  //懒加载默认的图片
-  loading:circle
+
+const app = createApp(App)
+
+// 全局属性设置
+app.config.globalProperties.$video = Video
+app.config.globalProperties.$bus = app
+
+// 使用插件
+app.use(store)
+app.use(vuetify)
+app.use(router)
+app.use(axiosPlugin)
+app.use(VueLazyload, {
+  loading: circle
 })
-Vue.config.productionTip = false
+app.use(Viewer, { 
+  defaultOptions: { 
+    zIndex: 9999 
+  } 
+})
 
-new Vue({
-  store,
-  vuetify,
-  router,
-  render: h => h(App),
-  beforeCreate(){
-    Vue.prototype.$bus=this
-  },
-}).$mount('#app')//注入路由对象到new Vue实例中，建立关联
-
-router.beforeEach((to, from, next) => {
-  if (to.matched.some(m => m.meta.auth)) {
-    //对路由进行验证
-    if (sessionStorage.getItem("loginState")) {//已经登录
-      next()//正常跳转到设置好的界面
-    }
-    else {
-      // 未登录则跳转到登陆界面，query:{ Rurl: to.fullPath}表示把当前路由信息传递过去方便登录后跳转回来；
-
-      next({ path: '/Login',query: {redirect: to.fullPath} })//路由重定向
-    }
-  }else{
-    next();
-  }
-  })
-
-Vue.use(VideoPlayer);
-Vue.use(Viewer, { defaultOptions: { zIndex: 9999 } });
+// 视图器设置
 Viewer.setDefaults({
   Options: {
     'inline': false,
@@ -103,3 +90,22 @@ Viewer.setDefaults({
     console.log(e.type, '图片缩放结束');
   }
 });
+
+app.config.productionTip = false
+
+app.mount('#app')
+
+// 路由守卫
+router.beforeEach((to, from, next) => {
+  if (to.matched.some(m => m.meta.auth)) {
+    //对路由进行验证
+    if (sessionStorage.getItem("loginState")) {//已经登录
+      next()//正常跳转到设置好的界面
+    } else {
+      // 未登录则跳转到登陆界面，query:{ Rurl: to.fullPath}表示把当前路由信息传递过去方便登录后跳转回来；
+      next({ path: '/Login', query: { redirect: to.fullPath } })//路由重定向
+    }
+  } else {
+    next();
+  }
+})

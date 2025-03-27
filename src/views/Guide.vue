@@ -307,15 +307,11 @@
 </template>
 
 <script>
+import { ref, reactive, onMounted } from 'vue';
 
 export default {
-  name: "Home",
-  data: () => ({
-    isteacher: "",
-    isstudent: "",
-    isuser: "",
-    visiter: "",
-    items: [
+  setup() {
+    const items = reactive([
       {
         src: "https://danxiagis.top:3007/image/banner1.jpg",
       },
@@ -326,28 +322,28 @@ export default {
         src: "https://danxiagis.top:3007/image/banner3.jpg",
       },
       {
-        src: "https://danxiagis.top:3007/image/banner6.jpg",
-      },
-      {
-        src: "https://danxiagis.top:3007/image/banner8.jpg",
-      },
-      {
-        src: "https://danxiagis.top:3007/image/banner9.jpg",
-      },
-      {
         src: "https://danxiagis.top:3007/image/banner4.jpg",
       },
       {
         src: "https://danxiagis.top:3007/image/banner5.jpg",
       },
       {
-        src: "https://danxiagis.top:3007/image/banner7.jpg",
+        src: "https://danxiagis.top:3007/image/banner6.jpg",
       },
-    ],
-  }),
-  methods: {
-    setTime: function () {
+    ]);
     
+    const isuser = ref(false);
+    const visiter = ref(false);
+    const isteacher = ref(false);
+    const isstudent = ref(false);
+    const d = ref(0);
+    const personPages = reactive([
+      {
+        pp_isteacher: true,
+      },
+    ]);
+    
+    const setTime = () => {
       let timerForReckon = setInterval(function () {
         let xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
@@ -356,14 +352,14 @@ export default {
             // console.log("111");
           }
         };
-        xhr.open("post", "https://danxiagis.top:8081/login/recordingTime"); //https://danxiagis.top:3005/ui/student/recordingTime
+        xhr.open("post", "https://danxiagis.top:8081/login/recordingTime"); 
         xhr.setRequestHeader(
           "Content-Type",
           "application/x-www-form-urlencoded"
         );
         xhr.send(`stu_id=${sessionStorage.getItem("stu_id")}`);
-        // xhr.send(`stu_id=202014310312`);
       }, 60000);
+      
       let hidden, visibilityChange;
       if (typeof document.hidden !== "undefined") {
         hidden = "hidden";
@@ -388,66 +384,70 @@ export default {
           } else {
             let date = new Date();
             let date1 = new Date(2020, 9, 5);
-            this.d = Math.round((date.valueOf() - date1.valueOf()) / 86400000);
-            // let week = Math.ceil(this.d / 7);
-            // console.log(week);
+            d.value = Math.round((date.valueOf() - date1.valueOf()) / 86400000);
+            
             timerForReckon = setInterval(function () {
               let xhr = new XMLHttpRequest();
               xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4 && xhr.status === 200) {
                   // console.log("222");
-                  // console.log(i++)
                 }
               };
               xhr.open(
                 "post",
-                "https://danxiagis.top:8081/login/recordingTime" //https://danxiagis.top:3005/ui/student/recordingTime
+                "https://danxiagis.top:8081/login/recordingTime"
               );
               xhr.setRequestHeader(
                 "Content-Type",
                 "application/x-www-form-urlencoded"
               );
-              // xhr.send(`week=${week}`);
               xhr.send(`stu_id=${sessionStorage.getItem("stu_id")}`);
-              // xhr.send(`stu_id="202014310312"`);
             }, 60000);
           }
         },
         false
       );
-    },
-  },
-  mounted() {
-    this.setTime();
+    };
     
-  },
-  created() {
-    let pageS = sessionStorage.getItem('isteacher');
-
-    let visiter = sessionStorage.getItem('isvisiter');
-    if (visiter == "true") {
-      this.isteacher = false;
-      this.isstudent = false;
-
-      this.personPages[0].pp_isteacher = false;
-    } else {
-      this.visiter = true;
-      this.isuser = true;
-      if (pageS == "false") {
-        this.isteacher = false;
-        this.isstudent = true;
-
-        // console.log(this.personPages[0].pp_isteacher)
+    onMounted(() => {
+      setTime();
+      
+      let pageS = sessionStorage.getItem('isteacher');
+      let visiterValue = sessionStorage.getItem('isvisiter');
+      
+      if (visiterValue == "true") {
+        isteacher.value = false;
+        isstudent.value = false;
+        personPages[0].pp_isteacher = false;
       } else {
-        this.isteacher = true;
-        this.isstudent = false;
-        this.personPages[0].pp_isteacher = false;
+        visiter.value = true;
+        isuser.value = true;
+        
+        if (pageS == "false") {
+          isteacher.value = false;
+          isstudent.value = true;
+        } else {
+          isteacher.value = true;
+          isstudent.value = false;
+          personPages[0].pp_isteacher = false;
+        }
       }
-    }
-  },
-  
+    });
+    
+    return {
+      items,
+      isuser,
+      visiter,
+      isteacher,
+      isstudent,
+      d,
+      personPages,
+      setTime
+    };
+  }
 };
 </script>
+
 <style scoped>
 .carousel {
   perspective: 1200px; /* 定义3D空间的观察距离 */
