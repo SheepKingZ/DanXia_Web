@@ -4,7 +4,6 @@ import { createRouter, createWebHashHistory } from "vue-router"
 import { defineAsyncComponent } from 'vue'
 import Guide from "../views/Guide.vue";
 import t1 from "../views/front/pages/learning/t1.vue";
-import HelloWorld from "../components/HelloWorld.vue";
 import NProgress from 'nprogress';
 //路由安装注册
 /* Vue.use(VueRouter);//路由插件初始化//用cdn的时候要注释掉 */
@@ -14,15 +13,7 @@ const routes = [
   //重定向，让项目跑起来的时候，访问/，立马让他定向到首页
   {
     path: '/:pathMatch(.*)*',
-    redirect: "/hello",
-  },
-  {
-    path: "/hello",
-    name: "HelloWorld",
-    component: HelloWorld,
-    meta: {
-      auth: false
-    }
+    redirect: "/front",
   },
   {
     path: "/front",
