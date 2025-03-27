@@ -368,14 +368,14 @@ export default {
     const changeMapType = () => {
       if (selectedMapType.value === "1") type.value = "img";
       else if (selectedMapType.value === "2") type.value = "vec";
-      if (current_mount.value == "danxia") _createMapView(danMount.value);
+      if (current_mount.value == "danxia") createMapView(danMount.value);
       else if (current_mount.value == "mang")
-        _createMapView(mangMount.value);
+        createMapView(mangMount.value);
       else if (current_mount.value == "xiangbi")
-        _createMapView(xiangMount.value);
+        createMapView(xiangMount.value);
     };
 
-    const _createMapView = (center) => {
+    const createMapView = (center) => {
       NProgress.start();
       const _self = {
         map: map,
@@ -711,17 +711,17 @@ export default {
     // Navigation methods
     const goDan = () => {
       current_mount.value = "danxia";
-      _createMapView(danMount.value);
+      createMapView(danMount.value);
     };
 
     const goMang = () => {
       current_mount.value = "mang";
-      _createMapView(mangMount.value);
+      createMapView(mangMount.value);
     };
 
     const goXiang = () => {
       current_mount.value = "xiangbi";
-      _createMapView(xiangMount.value);
+      createMapView(xiangMount.value);
     };
 
     //点闪烁
@@ -911,7 +911,7 @@ export default {
 
     // Initialize map on component mount
     onMounted(() => {
-      _createMapView(danMount.value);
+      createMapView(danMount.value);
     });
 
     // Return all reactive variables and methods (will add these in the next edit)
@@ -931,7 +931,7 @@ export default {
       baseLayers, current_mount, lat, long,
       edit_info,
       changeMapType,
-      _createMapView,
+      createMapView,
       goDan,
       goMang,
       goXiang,

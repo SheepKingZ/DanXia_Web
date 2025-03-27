@@ -136,7 +136,7 @@ export default {
     const cursorType = ref(null) //当前样式
     
     //创建地图
-    const _createMapView = function() {
+    const createMapView = function() {
       const _self = { map, mapConfig, graphicsLayer, pointGp, inputGraphic, inputDistance, point, lineOfSightViewModel, intersectionGraphic, measurements, cursorStyle, cursorType }
       const option = {
         //定义一个包含有JS API中js开发包和css样式文件的对象
@@ -510,8 +510,7 @@ export default {
 
     // 生命周期钩子
     onMounted(() => {
-      NProgress.start()
-      this._createMapView()
+      createMapView();
     })
 
     onBeforeUnmount(() => {
@@ -543,7 +542,7 @@ export default {
       measurements,
       cursorStyle,
       cursorType,
-      _createMapView,
+      createMapView,
       getLength,
       getArea,
       switchType,

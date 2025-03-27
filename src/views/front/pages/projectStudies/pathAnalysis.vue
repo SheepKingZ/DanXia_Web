@@ -63,7 +63,7 @@ export default {
     const addPointsL = ref(null); //地图绘制点的监听器
 
     //创建地图
-    const _createMapView = function () {
+    const createMapView = function () {
       const _self = { 
         map, 
         mapConfig, 
@@ -420,8 +420,7 @@ export default {
     
     // 生命周期钩子
     onMounted(() => {
-      NProgress.start();
-      _createMapView();
+      createMapView();
     });
     
     onBeforeUnmount(() => {
@@ -443,7 +442,7 @@ export default {
       routeParams,
       routeTask,
       addPointsL,
-      _createMapView,
+      createMapView,
       addListening,
       addPoints,
       solveResults,

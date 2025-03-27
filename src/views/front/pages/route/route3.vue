@@ -210,7 +210,7 @@ export default {
     });
     
     //创建地图
-    const _createMapView = function () {
+    const createMapView = function () {
       const _self = { 
         map, 
         mapConfig, 
@@ -729,9 +729,9 @@ export default {
       });
     };
     
-    // 组件挂载时创建地图
+    // 生命周期钩子
     onMounted(() => {
-      _createMapView();
+      createMapView();
     });
     
     // 返回响应式状态和方法
@@ -760,7 +760,7 @@ export default {
       horizontalLine,
       verticalLine,
       pointIntroduce,
-      _createMapView,
+      createMapView,
       flicker,
       clickLocation,
       inited,

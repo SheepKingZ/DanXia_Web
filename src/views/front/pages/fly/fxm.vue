@@ -218,7 +218,7 @@ export default {
     const route2 = shallowRef(null);
 
     //创建地图
-    const _createMapView = function () {
+    const createMapView = function () {
       const option = {
         //定义一个包含有JS API中js开发包和css样式文件的对象
         url: "https://js.arcgis.com/4.19/init.js",
@@ -436,7 +436,7 @@ export default {
 
     // 生命周期钩子
     onMounted(() => {
-      _createMapView();
+      createMapView();
     });
 
     // 返回方法和响应式状态
@@ -456,7 +456,7 @@ export default {
       polylineGraphic,
       route1,
       route2,
-      _createMapView,
+      createMapView,
       changeRoute,
       fly,
     };

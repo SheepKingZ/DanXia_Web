@@ -412,7 +412,7 @@ export default {
 
     // 方法部分
     //创建地图
-    const _createMapView = () => {
+    const createMapView = () => {
       NProgress.start();
       
       const option = {
@@ -1036,7 +1036,7 @@ export default {
 
     // 生命周期钩子
     onMounted(() => {
-      _createMapView();
+      createMapView();
     });
 
     // 组件卸载时停止动画
@@ -1091,7 +1091,7 @@ export default {
       nowTilt,
       nowHeading,
       nowZ,
-      _createMapView,
+      createMapView,
       densifyLine,
       getSchedule,
       fly_test,

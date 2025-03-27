@@ -63,7 +63,7 @@ export default {
     const isstudent = ref(true); //是否是学生
 
     //创建地图
-    const _createMapView = function() {
+    const createMapView = function() {
       const _self = { map, mapConfig, graphicsLayer, polyline, sketchViewModel, RoutesfeatureLayer }; //定义一个_self对象引用响应式变量
       
       //通过loadModules来做衔接
@@ -413,8 +413,7 @@ export default {
     
     // 生命周期钩子
     onMounted(() => {
-      NProgress.start();
-      _createMapView();
+      createMapView();
     });
     
     onBeforeUnmount(() => {
@@ -447,7 +446,7 @@ export default {
       option,
       chart,
       isstudent,
-      _createMapView,
+      createMapView,
       activedrawPolyline,
       collectRoutes,
       handleRouteChange,
