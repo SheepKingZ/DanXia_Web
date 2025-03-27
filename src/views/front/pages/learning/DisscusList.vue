@@ -68,51 +68,62 @@
 
 </style>
 <script>
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+
 export default {
   name: "DisscusList",
+  setup() {
+    const router = useRouter();
 
-  data() {
-    return {
-      QuesList: ["这里的沉积岩是如何形成的","天生桥"],
-      reveal: false,
-      model: 2,
-      ques_text:'',
-      isteacher:'',
-      title:'',
-    };
-  },
-  components: {},
-  created(){
-    // console.log(sessionStorage.isteacher)
-    if(sessionStorage.isteacher=='false'||sessionStorage.isvisiter=='true'){
-      this.isteacher=false
-    }else if(sessionStorage.isteacher=='true'){
-      this.isteacher=true
-    }
-  },
-  methods: {
-    nextpage(e){ 
-      
-      this.title = e
-      this.$router.push({
+    // 响应式状态
+    const QuesList = ref(["这里的沉积岩是如何形成的", "天生桥"]);
+    const reveal = ref(false);
+    const model = ref(2);
+    const ques_text = ref('');
+    const isteacher = ref('');
+    const title = ref('');
+
+    // 方法
+    const nextpage = (e) => {
+      title.value = e;
+      router.push({
         name: "Disscus",
         params: {
-          title: this.title,
+          title: title.value,
         },
       });
-      this.$router.replace('/front/pages/learning/Disscus')
-    }
-    ,
-    QusSent(){
-      if(this.ques_text!=''){
-        this.QuesList.push(this.ques_text)
-        alert('发布成功')
+      router.replace('/front/pages/learning/Disscus');
+    };
+
+    const QusSent = () => {
+      if (ques_text.value !== '') {
+        QuesList.value.push(ques_text.value);
+        alert('发布成功');
+      } else {
+        alert('请输入问题');
       }
-      else{
-        alert('请输入问题')
+    };
+
+    onMounted(() => {
+      // console.log(sessionStorage.isteacher)
+      if (sessionStorage.isteacher === 'false' || sessionStorage.isvisiter === 'true') {
+        isteacher.value = false;
+      } else if (sessionStorage.isteacher === 'true') {
+        isteacher.value = true;
       }
-     
-    }
-  },
+    });
+
+    return {
+      QuesList,
+      reveal,
+      model,
+      ques_text,
+      isteacher,
+      title,
+      nextpage,
+      QusSent
+    };
+  }
 };
 </script>

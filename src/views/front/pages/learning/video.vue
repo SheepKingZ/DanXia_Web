@@ -170,129 +170,132 @@
 
 
 <script>
+import { ref, reactive, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import axios from "axios";
+
 export default {
   name: "Class",
+  setup() {
+    const route = useRoute();
 
-  data() {
+    // 响应式状态
+    const model = ref(1);
+    const vname = ref("");
+    const picmodel = ref(null);
+    const videoSrc = ref("");
+    const vsrc = ref("");
+    const videoList = ref([]);
+    const playerOptions = reactive({
+      playbackRates: [0.5, 1.0, 1.5, 2.0], // 可选的播放速度
+      autoplay: false,  // 如果为true,浏览器准备好时开始回放
+      muted: false,     // 默认情况下将会消除任何音频。
+      loop: false,      // 是否视频一结束就重新开始。
+      preload: 'auto',  // 建议浏览器在<video>加载元素后是否应该开始下载视频数据。auto浏览器选择最佳行为,立即开始加载视频（如果浏览器支持）
+      language: 'zh-CN',
+      aspectRatio: '16:9',  // 将播放器置于流畅模式，并在计算播放器的动态大小时使用该值。值应该代表一个比例 - 用冒号分隔的两个数字（例如"16:9"或"4:3"）
+      fluid: true,  // 当true时，Video.js player将拥有流体大小。换句话说，它将按比例缩放以适应其容器。
+      sources: [{
+        type: "video/mp4",  // 类型
+        src: "",  // url地址
+      }],
+      width: document.documentElement.clientWidth, // 播放器宽度
+      notSupportedMessage: '此视频暂无法播放，请稍后再试',  // 允许覆盖Video.js无法播放媒体源时显示的默认信息。
+      controlBar: {
+        timeDivider: true,           // 当前时间和持续时间的分隔符
+        durationDisplay: true,       // 显示持续时间
+        remainingTimeDisplay: false, // 是否显示剩余时间功能
+        fullscreenToggle: true       // 是否显示全屏按钮
+      }
+    });
 
-    return {
-      model:1,
-      vname:"",
-      picmodel: null,
-      videoSrc:"",
-      vsrc:"",
-      videoList: [],
-       playerOptions: {
-                playbackRates: [0.5, 1.0, 1.5, 2.0], // 可选的播放速度
-                autoplay: false,  // 如果为true,浏览器准备好时开始回放
-                muted: false,     // 默认情况下将会消除任何音频。
-                loop: false,      // 是否视频一结束就重新开始。
-                preload: 'auto',  // 建议浏览器在<video>加载元素后是否应该开始下载视频数据。auto浏览器选择最佳行为,立即开始加载视频（如果浏览器支持）
-                language: 'zh-CN',
-                aspectRatio: '16:9',  // 将播放器置于流畅模式，并在计算播放器的动态大小时使用该值。值应该代表一个比例 - 用冒号分隔的两个数字（例如"16:9"或"4:3"）
-                fluid: true,  // 当true时，Video.js player将拥有流体大小。换句话说，它将按比例缩放以适应其容器。
-               
-               sources: [{
-                    type: "video/mp4",  // 类型
-                    src:"" ,  // url地址
-                }],
-                // poster: '',  // 封面地址
-                width: document.documentElement.clientWidth, // 播放器宽度
-                notSupportedMessage: '此视频暂无法播放，请稍后再试',  // 允许覆盖Video.js无法播放媒体源时显示的默认信息。
-                controlBar: {
-                    timeDivider: true,           // 当前时间和持续时间的分隔符
-                    durationDisplay: true,       // 显示持续时间
-                    remainingTimeDisplay: false, // 是否显示剩余时间功能
-                    fullscreenToggle: true       // 是否显示全屏按钮
-                }
-       }
-
+    // 方法
+    const PassClass = () => {
+      const currentClass = route.params.currentClass;
+      // console.log(111+ currentClass)
     };
-  },
-  components: {},
-  methods: {
-     PassClass(){
-    var self =this;
-    self.currentClass = self.$route.params.currentClass;
-    this.currentClass = self.currentClass;
-    // console.log(111+ this.currentClass)
-    },
-   PassSrc(){
-      var self =this;
-      self.src = self.$route.params.v_src;
-      self.v_name = self.$route.params.v_name;
-      self.pic = self.$route.params.v_pic;
-      this.PassPPtSrc = self.src;
-      this.vname = self.v_name;
-      this.videoSrc = self.src;
-      // console.log("1"+this.vname)
-      this.playerOptions.sources[0].src=this.videoSrc;
-              
-    },
-    loadVideo(){
-     axios({
+
+    const PassSrc = () => {
+      const src = route.params.v_src;
+      const v_name = route.params.v_name;
+      const pic = route.params.v_pic;
+      vname.value = v_name;
+      videoSrc.value = src;
+      playerOptions.sources[0].src = videoSrc.value;
+      // console.log("1"+vname.value)
+    };
+
+    const loadVideo = () => {
+      axios({
         method: "get",
         url: "https://danxiagis.top:8081/uploadData/get",
       }).then((response) => {
-      const res = response.data;
-      for (var i = 0; i < res.length; i++) {
-         const resInfo = res[i].info; 
-      
-        //调试用视频
-         if(res[i]._id=='视频'){
-          //  console.log(res[i])
-        for (var a = 0; a < resInfo.length; a++) { 
-             const vitem = {
-              pic: resInfo[a].picture,
-              vsrc:resInfo[a].video,
-              text:resInfo[a].topic
-             }  
-            this.videoList.push(vitem);
+        const res = response.data;
+        for (let i = 0; i < res.length; i++) {
+          const resInfo = res[i].info;
+          // 调试用视频
+          if (res[i]._id === '视频') {
+            for (let a = 0; a < resInfo.length; a++) {
+              const vitem = {
+                pic: resInfo[a].picture,
+                vsrc: resInfo[a].video,
+                text: resInfo[a].topic
+              };
+              videoList.value.push(vitem);
             }
-              // console.log(this.videoList)
-        }
-      
-        }
-      })
-    },
-    //图片点击选择事件
-    nextvideo(text){
-    // console.log(text);
-     for (var i = 0; i < this.videoList.length; i++) {
-        if (text == this.videoList[i].text) {
-          this.vsrc = this.videoList[i].vsrc;
+            // console.log(videoList.value)
           }
         }
-    //  console.log(this.vsrc);
-     this.playerOptions.sources[0].src=this.vsrc;  
-     this.vname=text;
-    },
+      });
+    };
+
+    // 图片点击选择事件
+    const nextvideo = (text) => {
+      // console.log(text);
+      for (let i = 0; i < videoList.value.length; i++) {
+        if (text === videoList.value[i].text) {
+          vsrc.value = videoList.value[i].vsrc;
+        }
+      }
+      // console.log(vsrc.value);
+      playerOptions.sources[0].src = vsrc.value;
+      vname.value = text;
+    };
+
     // selection点击选择
-    selectVideo(event){
-    // console.log(event);
-    
-     for (var i = 0; i < this.videoList.length; i++) {
-        if (event == this.videoList[i].text) {
-          this.vsrc = this.videoList[i].vsrc;
-          }
+    const selectVideo = (event) => {
+      // console.log(event);
+      for (let i = 0; i < videoList.value.length; i++) {
+        if (event === videoList.value[i].text) {
+          vsrc.value = videoList.value[i].vsrc;
         }
-    //  console.log(this.vsrc);
-     this.playerOptions.sources[0].src=this.vsrc;  
-    },
+      }
+      // console.log(vsrc.value);
+      playerOptions.sources[0].src = vsrc.value;
+    };
 
+    onMounted(() => {
+      PassSrc();
+      loadVideo();
+      PassClass();
+    });
 
-  },
-   mounted: function () {
-    // this.loadPPTList();
-    this.PassSrc();
-    this. loadVideo();
-    this.PassClass()
-  },
-  created:function(){
-    // this.PassSrc();
+    return {
+      model,
+      vname,
+      picmodel,
+      videoSrc,
+      vsrc,
+      videoList,
+      playerOptions,
+      PassClass,
+      PassSrc,
+      loadVideo,
+      nextvideo,
+      selectVideo
+    };
   }
-  };
+};
 </script>
 <style>
 #r {

@@ -137,193 +137,213 @@
 
 
 <script>
+import { ref, reactive, onMounted, onBeforeUnmount, onCreated } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 export default {
   name: "Class",
-
-  data() {
-    return {
-       
-      timeoutId: null, // 计时器的 ID  
-      model: 1,
-      ztname: "",
-      nrname: "",
-      ZTname: ["nodata"],
-      NRname: ["nodata"],
-      ZTchild: [],
-      pSrc: "",
-      PassPPtSrc: "",
-      currentClass: "",
-    };
-  },
   
-  components: {},
-  
-  methods: {
+  setup() {
+    const route = useRoute();
+    const router = useRouter();
     
-    PassClass() {
-      this.currentClass = this.$route.params.currentClass
-      this.loadPPTList();
-    },
-    loadPPTList() {
-        const res = JSON.parse(localStorage.getItem('meterial'));
-        
-        this.ZTname = [];
-        this.ZTchild = [];
+    const timeoutId = ref(null); // 计时器的 ID  
+    const model = ref(1);
+    const ztname = ref("");
+    const nrname = ref("");
+    const ZTname = ref(["nodata"]);
+    const NRname = ref(["nodata"]);
+    const ZTchild = ref([]);
+    const pSrc = ref("");
+    const PassPPtSrc = ref("");
+    const currentClass = ref("");
+    
+    // 获取上一页面信息
+    const PassClass = () => {
+      currentClass.value = route.params.currentClass;
+      loadPPTList();
+    };
+    
+    const loadPPTList = () => {
+      const res = JSON.parse(localStorage.getItem('meterial'));
+      
+      ZTname.value = [];
+      ZTchild.value = [];
       /* 整理专题selectitem */
-        for (let i = 0; i < res.length; i++) {
-          const resInfo = res[i].info;
-          
-          if (res[i].info[0].subject.indexOf(this.currentClass) !=-1 ) {
-
-            this.ZTchild = [];
-            for (let j = 0; j < resInfo.length; j++) {
-              let nr = {
-                text: resInfo[j].topic,
-                ppt: resInfo[j].pdf,
-              };
-              this.ZTchild.push(nr);
-            }
-            
-            let del_t = resInfo[0].subject + "—";
-            let it_title = res[i]._id.replace(del_t, "");
-            let zt = {
-              zt_id: it_title,
-              items: this.ZTchild,
-              text: it_title,
-            };
-            
-            this.ZTname.push(zt);
-
-          }
-        }
-        /* 整理内容selectitem */
-        for (let i = 0; i < this.ZTname.length; i++) {
-          if (this.ztname == this.ZTname[i].zt_id) {
-            this.NRname = [];
-            // console.log(this.ZTname[i]);
-            const nrItem = this.ZTname[i].items;
-
-            for (let j = 0; j < nrItem.length; j++) {
-              const item = {
-                text: nrItem[j].text,
-                ppt: nrItem[j].ppt,
-              };
-              this.NRname.push(item);
-            }
-          }
-        }
+      for (let i = 0; i < res.length; i++) {
+        const resInfo = res[i].info;
         
-    },
-    //双向联动点击事件
-    SelectChange(event) {
+        if (res[i].info[0].subject.indexOf(currentClass.value) !== -1) {
+          
+          ZTchild.value = [];
+          for (let j = 0; j < resInfo.length; j++) {
+            let nr = {
+              text: resInfo[j].topic,
+              ppt: resInfo[j].pdf,
+            };
+            ZTchild.value.push(nr);
+          }
+          
+          let del_t = resInfo[0].subject + "—";
+          let it_title = res[i]._id.replace(del_t, "");
+          let zt = {
+            zt_id: it_title,
+            items: ZTchild.value,
+            text: it_title,
+          };
+          
+          ZTname.value.push(zt);
+        }
+      }
+      
+      /* 整理内容selectitem */
+      for (let i = 0; i < ZTname.value.length; i++) {
+        if (ztname.value == ZTname.value[i].zt_id) {
+          NRname.value = [];
+          // console.log(ZTname.value[i]);
+          const nrItem = ZTname.value[i].items;
+          
+          for (let j = 0; j < nrItem.length; j++) {
+            const item = {
+              text: nrItem[j].text,
+              ppt: nrItem[j].ppt,
+            };
+            NRname.value.push(item);
+          }
+        }
+      }
+    };
+    
+    // 双向联动点击事件
+    const SelectChange = (event) => {
       // console.log(typeof event); --string
       // console.log( event) --string
-      //判断相等，然后取专题项目里的内容item
-      this.ztname = event;
-      localStorage.setItem('ZT', this.ztname);
-      for (let i = 0; i < this.ZTname.length; i++) {
-        if (event == this.ZTname[i].zt_id) {
-          this.NRname = [];
-          // console.log(this.ZTname[i]);
-          const nrItem = this.ZTname[i].items;
-
+      // 判断相等，然后取专题项目里的内容item
+      ztname.value = event;
+      localStorage.setItem('ZT', ztname.value);
+      for (let i = 0; i < ZTname.value.length; i++) {
+        if (event == ZTname.value[i].zt_id) {
+          NRname.value = [];
+          // console.log(ZTname.value[i]);
+          const nrItem = ZTname.value[i].items;
+          
           for (let j = 0; j < nrItem.length; j++) {
             console.log(nrItem[j]);
             const item = {
               text: nrItem[j].text,
               ppt: nrItem[j].ppt,
             };
-            this.NRname.push(item);
+            NRname.value.push(item);
           }
         }
       }
-    },
+    };
+    
     // 子选项点击展示PPT
-    change(event) {
+    const change = (event) => {
       // console.log(event);
-      // console.log(this.NRname);
-      this.nrname = event;
-      localStorage.setItem('NR', this.nrname); 
-      this.pSrc = "";
-      for (let i = 0; i < this.NRname.length; i++) {
-        if (event == this.NRname[i].text) {
-          this.pSrc = this.NRname[i].ppt
-          localStorage.setItem('src', this.pSrc);
+      // console.log(NRname.value);
+      nrname.value = event;
+      localStorage.setItem('NR', nrname.value);
+      pSrc.value = "";
+      for (let i = 0; i < NRname.value.length; i++) {
+        if (event == NRname.value[i].text) {
+          pSrc.value = NRname.value[i].ppt;
+          localStorage.setItem('src', pSrc.value);
         }
       }
-      // console.log(this.NRname[i].ppt)
-      localStorage.setItem('ZT',this.ztname)
-      localStorage.setItem('NR',this.nrname)
-      localStorage.setItem('src',this.pSrc)
-    },
-    loadPPT() {
-      //  console.log(111)
-      this.pSrc = this.PassPPtSrc
-    },
-    //调用前一个页面的数据
-    PassSrc() {
-      let self = this;
-      if(localStorage.getItem('src')==null)
-      {
-        self.src = self.$route.params.pptsrc;
-        this.PassPPtSrc = self.src;
-
-        self.currentName = self.$route.params.currentName;
-        this.nrname = self.currentName;
-
-        self.parentName = self.$route.params.parentName;
-        this.ztname = self.parentName;
-
-        self.currentItem = self.$route.params.currentItem;
-        this.NRname = self.currentItem;
+      // console.log(NRname.value[i].ppt)
+      localStorage.setItem('ZT', ztname.value);
+      localStorage.setItem('NR', nrname.value);
+      localStorage.setItem('src', pSrc.value);
+    };
+    
+    const loadPPT = () => {
+      // console.log(111)
+      pSrc.value = PassPPtSrc.value;
+    };
+    
+    // 调用前一个页面的数据
+    const PassSrc = () => {
+      if (localStorage.getItem('src') == null) {
+        const src = route.params.pptsrc;
+        PassPPtSrc.value = src;
+        
+        const currentName = route.params.currentName;
+        nrname.value = currentName;
+        
+        const parentName = route.params.parentName;
+        ztname.value = parentName;
+        
+        const currentItem = route.params.currentItem;
+        NRname.value = currentItem;
+      } else {
+        nrname.value = localStorage.getItem('NR');
+        ztname.value = localStorage.getItem('ZT');
+        PassPPtSrc.value = localStorage.getItem('src');
       }
-      else
-      {
-        this.nrname=localStorage.getItem('NR')
-        this.ztname=localStorage.getItem('ZT')
-        this.PassPPtSrc=localStorage.getItem('src')
-      }
-      localStorage.setItem('ZT',this.ztname)
-      localStorage.setItem('NR',this.nrname)
-      localStorage.setItem('src',this.PassPPtSrc)
-      
-    },
-    startTimer() {  
-      this.timeoutId = setTimeout(() => {  
+      localStorage.setItem('ZT', ztname.value);
+      localStorage.setItem('NR', nrname.value);
+      localStorage.setItem('src', PassPPtSrc.value);
+    };
+    
+    const startTimer = () => {
+      timeoutId.value = setTimeout(() => {
         alert('页面已停留过长！');
-        this.$router.push("/front"); // 计时器到时，显示弹窗提示   
+        router.push("/front"); // 计时器到时，显示弹窗提示   
       }, 1800000); // 设置计时器时间为 30分钟，可根据需要调整  
-      
-       
-      
-    },  
-    clearTimeout() {  
-      clearTimeout(this.timeoutId); // 清除计时器  
-    },  
-    resetTimer() {  
-      this.clearTimeout(); // 清除当前计时器  
-      this.startTimer(); // 重新设置计时器  
-    },  
-  },
-  created() {
-    this.ztname = localStorage.getItem('ZT') || ''; 
-    this.nrname = localStorage.getItem('NR') || '';
-    this.PassPPtSrc = localStorage.getItem('src') || '';
-    console.log('create',this.ztname);
-  },
-  mounted() {
+    };
     
-    console.log('mountedzt',this.ztname);
-    this.startTimer(); 
+    const clearTimeout = () => {
+      clearTimeout(timeoutId.value); // 清除计时器  
+    };
     
-    this.PassSrc();
-    this.loadPPT();
-    this.PassClass();
-  },
-  beforeDestroy() {  
-    this.clearTimeout(); // 在组件销毁前清除计时器，避免内存泄漏  
-  },  
+    const resetTimer = () => {
+      clearTimeout(); // 清除当前计时器  
+      startTimer(); // 重新设置计时器  
+    };
+    
+    // 替代 created 生命周期钩子
+    ztname.value = localStorage.getItem('ZT') || '';
+    nrname.value = localStorage.getItem('NR') || '';
+    PassPPtSrc.value = localStorage.getItem('src') || '';
+    console.log('create', ztname.value);
+    
+    onMounted(() => {
+      console.log('mountedzt', ztname.value);
+      startTimer();
+      
+      PassSrc();
+      loadPPT();
+      PassClass();
+    });
+    
+    onBeforeUnmount(() => {
+      clearTimeout(); // 在组件销毁前清除计时器，避免内存泄漏  
+    });
+    
+    return {
+      timeoutId,
+      model,
+      ztname,
+      nrname,
+      ZTname,
+      NRname,
+      ZTchild,
+      pSrc,
+      PassPPtSrc,
+      currentClass,
+      PassClass,
+      loadPPTList,
+      SelectChange,
+      change,
+      loadPPT,
+      PassSrc,
+      startTimer,
+      clearTimeout,
+      resetTimer
+    };
+  }
 };
 </script>
 <style>

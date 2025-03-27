@@ -644,135 +644,129 @@
 <script>
 import { reqGetDDL } from "../../../../api";
 import axios from "axios";
+import { ref, reactive, computed, watch, onMounted } from 'vue';
+
 export default {
   name: "Update",
 
-  data() {
-    return {
-      rpEndDat: null,
-      dialogKey: 0,
-      cancelToken: null,
-      IsSending: false,
-      dele_notice_dia: false,
-      item_time: "",
-      modifycontent: "",
-      showEditDialog: false,
-      showEditDialog1: false,
-      model: "0",
-      selectedValue: [],
-      items: [
-        { name: "All", value: "" },
-        { name: "自然地理", value: [] },
-        { name: "人文与经济地理", value: [] },
-        { name: "地理信息系统原理", value: [] },
-      ],
-      dialoggg: false,
-      startDate: "",
-      endDate: "",
-      text: "查看",
-      look: false,
-      search: "",
-      dialog: false,
-      dialogDelete: false,
-      childItems: [],
-      num: 0,
-      update_items: [
-        "自然地理",
-        "人文与经济地理",
-        "实习资料",
-        "地理信息系统原理",
-        "地图学",
-        "其他资料",
-      ],
+  setup() {
+    // 反应式状态
+    const rpEndDate = ref(null);
+    const dialogKey = ref(0);
+    const cancelToken = ref(null);
+    const IsSending = ref(false);
+    const dele_notice_dia = ref(false);
+    const item_time = ref("");
+    const modifycontent = ref("");
+    const showEditDialog = ref(false);
+    const showEditDialog1 = ref(false);
+    const model = ref("0");
+    const selectedValue = ref([]);
+    const items = ref([
+      { name: "All", value: "" },
+      { name: "自然地理", value: [] },
+      { name: "人文与经济地理", value: [] },
+      { name: "地理信息系统原理", value: [] },
+    ]);
+    const dialoggg = ref(false);
+    const startDate = ref("");
+    const endDate = ref("");
+    const text = ref("查看");
+    const look = ref(false);
+    const search = ref("");
+    const dialog = ref(false);
+    const dialogDelete = ref(false);
+    const childItems = ref([]);
+    const num = ref(0);
+    const update_items = ref([
+      "自然地理",
+      "人文与经济地理",
+      "实习资料",
+      "地理信息系统原理",
+      "地图学",
+      "其他资料",
+    ]);
 
-      type: "", //类型
-      chapter: "", //章节名
-      name: "", //文件名
-      infodata: "",
-      inputfile: "", //文件
+    const type = ref(""); //类型
+    const chapter = ref(""); //章节名
+    const name = ref(""); //文件名
+    const infodata = ref("");
+    const inputfile = ref(""); //文件
 
-      editedIndex: -1,
-      editedItem: {
-        id: "",
-        name: "",
-        type: "",
-        subject: "",
-        chapter: "",
-        enable: "",
+    const editedIndex = ref(-1);
+    const editedItem = reactive({
+      id: "",
+      name: "",
+      type: "",
+      subject: "",
+      chapter: "",
+      enable: "",
+    });
+    const defaultItem = reactive({
+      id: "",
+      name: "",
+      type: "",
+      subject: "",
+      chapter: "",
+      enable: "",
+    });
+    const list = ref([
+      { text: "名称", align: "start", value: "name" },
+      {
+        text: "类型",
+        align: "start",
+        value: "type",
       },
-      defaultItem: {
-        id: "",
-        name: "",
-        type: "",
-        subject: "",
-        chapter: "",
-        enable: "",
+      {
+        text: "科目",
+        align: "start",
+        value: "subject",
       },
-      list: [
-        { text: "名称", align: "start", value: "name" },
-        {
-          text: "类型",
-          align: "start",
-          value: "type",
-        },
-        {
-          text: "科目",
-          align: "start",
-          value: "subject",
-        },
-        {
-          text: "章节",
-          align: "start",
-          value: "chapter",
-        },
-        {
-          text: "发布时间",
-          align: "start",
-          value: "time",
-        },
-        {
-          text: "",
-          value: "action",
-          sortable: false,
-        },
-      ],
-      detail: [], //存放资料列表
-      ques_text: "",
-      QuesList: [],
-      past_QuesList: [],
-      NoticeList: [],
-      all: [],
-      natural_checkbox: false,
-      human_checkbox: false,
-      ca_checkbox: false,
-      gis_checkbox: false,
-      edited_qus: {},
-      edited_qus1: {},
-      del_qus1: {},
-      del_qus: {},
-      showDeleteDialog1: false,
-      showDeleteDialog: false,
-    };
-  },
-  watch: {
-    dialog(val) {
-      val || this.close();
-    },
-    dialogDelete(val) {
-      val || this.closeDelete();
-    },
-  },
-  computed: {},
-  components: {},
-  created() {
-    this.loadClassList(),
-      this.load_que(),
-      this.load_past_que(),
-      this.load_notice();
-  },
-  methods: {
-    checkrpEndDate() {
-      if (this.rpEndDate == null || this.rpEndDate == "") {
+      {
+        text: "章节",
+        align: "start",
+        value: "chapter",
+      },
+      {
+        text: "发布时间",
+        align: "start",
+        value: "time",
+      },
+      {
+        text: "",
+        value: "action",
+        sortable: false,
+      },
+    ]);
+    const detail = ref([]); //存放资料列表
+    const ques_text = ref("");
+    const QuesList = ref([]);
+    const past_QuesList = ref([]);
+    const NoticeList = ref([]);
+    const all = ref([]);
+    const natural_checkbox = ref(false);
+    const human_checkbox = ref(false);
+    const ca_checkbox = ref(false);
+    const gis_checkbox = ref(false);
+    const edited_qus = reactive({});
+    const edited_qus1 = reactive({});
+    const del_qus1 = reactive({});
+    const del_qus = reactive({});
+    const showDeleteDialog1 = ref(false);
+    const showDeleteDialog = ref(false);
+
+    // 监听器
+    watch(dialog, (val) => {
+      val || close();
+    });
+
+    watch(dialogDelete, (val) => {
+      val || closeDelete();
+    });
+
+    // 方法
+    const checkrpEndDate = () => {
+      if (rpEndDate.value == null || rpEndDate.value == "") {
         alert("还未选择时间");
         return;
       }
@@ -780,492 +774,62 @@ export default {
         url: "https://danxiagis.top:8081/teacher/setFileDDL",
         method: "post",
         params: {
-          FileDDL: this.rpEndDate.replace("T", " ") + ":00.000",
+          FileDDL: rpEndDate.value.replace("T", " ") + ":00.000",
         },
       }).then(async (resp) => {
         alert(resp.data);
       });
-    },
-    cancelUpload() {
-      this.IsSending = false;
-      if (this.cancelToken) {
+    };
+
+    const cancelUpload = () => {
+      IsSending.value = false;
+      if (cancelToken.value) {
         /* error.message为''中的 */
-        this.cancelToken.cancel("上传被用户取消。");
+        cancelToken.value.cancel("上传被用户取消。");
       }
-      this.dialogKey++;
-    },
-    /* subj_filter() {
-      //******************写了一点**************************
-      if (this.natural_checkbox) {
-        for (let i = 0; i < this.detail.length; i++) {
-          console.log(this.detail[i].subject);
-          if (this.detail[i].subject == "自然地理")
-            this.detail = this.detail.filter(
-              (item) => (item.subject = "自然地理")
-            );
-        }
-      }
-    }, */
-    qus_edit(e) {
-      this.showEditDialog = true;
-      this.edited_qus = {
+      dialogKey.value++;
+    };
+
+    const qus_edit = (e) => {
+      showEditDialog.value = true;
+      Object.assign(edited_qus, {
         id: e.id,
         title: e.title,
         start: e.start,
         end: e.end,
-      };
+      });
       console.log("tttttttttttttt", e);
-    },
-    qus_edit1(item) {
-      this.showEditDialog1 = true;
-      this.edited_qus1 = {
-        id: item.id,
+    };
 
+    const qus_edit1 = (item) => {
+      showEditDialog1.value = true;
+      Object.assign(edited_qus1, {
+        id: item.id,
         title: item.title,
         start: item.start,
         end: item.end,
         item_time: item.used_time,
-      };
-    },
-    qus_to_delete1(e) {
-      this.showDeleteDialog1 = true;
-      this.del_qus1 = {
+      });
+    };
+
+    const qus_to_delete1 = (e) => {
+      showDeleteDialog1.value = true;
+      Object.assign(del_qus1, {
         id: e.id,
         title: e.title,
-      };
-    },
-    qus_to_delete(e) {
-      this.showDeleteDialog = true;
-      this.del_qus = {
+      });
+    };
+
+    const qus_to_delete = (e) => {
+      showDeleteDialog.value = true;
+      Object.assign(del_qus, {
         id: e.id,
         title: e.title,
-      };
-    },
-    closeChanges() {
-      console.log("@@@@", this.edited_qus);
-      this.showEditDialog = false;
-    },
-    closeChanges1() {
-      this.showEditDialog1 = false;
-    },
-    saveChanges() {
-      let uuid = this.edited_qus.id;
-      //展示处修改
-      for (let a = 0; a < this.QuesList.length; a++) {
-        if (uuid == this.QuesList[a].id) {
-          this.QuesList[a] = {
-            title: this.edited_qus.title,
-            id: uuid,
-            start: this.edited_qus.start.split("+")[0],
-            end: this.edited_qus.end.split("+")[0],
-          };
-          break;
-        }
-      }
-
-      let st = this.edited_qus.start.replace("T", " ")
-      let et = this.edited_qus.end.replace("T", " ")
-      console.log('split',et.split(":")[2]);
-      if(st.split(":")[2]!='00')
-        st+=':00.000'
-        if(et.split(":")[2]!='00')
-        et+=':00.000'
-      axios({
-        method: "post",
-        url: "https://danxiagis.top:8081/assessment/teacher/changeAssessment",
-        params: {
-          teacher: sessionStorage.getItem("teacheruuid"),
-          assess_id: uuid,
-          title: this.edited_qus.title,
-          content: this.edited_qus.title,
-          start_date: st,
-          end_time: et,
-        },
-      })
-        .then((response) => {
-          console.log(response);
-          // 保存后关闭弹窗
-
-          this.showEditDialog = false;
-          alert("修改成功");
-        })
-        .catch((err) => {
-          alert(err);
-        });
-    },
-    saveChanges1() {
-      let uuid = this.edited_qus1.id;
-      //展示处修改
-      for (let a = 0; a < this.past_QuesList.length; a++) {
-        if (uuid == this.past_QuesList[a].id) {
-          this.past_QuesList[a] = {
-            title: this.edited_qus1.title,
-            id: uuid,
-            start: this.edited_qus1.start.split("+")[0],
-            end: this.edited_qus1.end.split("+")[0],
-          };
-          break;
-        }
-      }
-      axios({
-        method: "post",
-        url: "https://danxiagis.top:8081/assessment/upAssessment",
-        params: {
-          content: this.edited_qus1.title,
-          start_date: this.edited_qus1.start.replace("T", " ") + ":00.000",
-          end_time: this.edited_qus1.end.replace("T", " ") + ":00.000",
-          teacher: sessionStorage.getItem("teacheruuid"),
-          title: this.edited_qus1.title,
-        },
-      })
-        .then((response) => {
-          console.log(response);
-          // 保存后关闭弹窗
-          this.load_past_que();
-          this.load_que();
-          this.showEditDialog1 = false;
-          alert("发布成功");
-        })
-        .catch((err) => {
-          alert(err);
-        });
-    },
-    load_que() {
-      axios({
-        method: "get",
-        url: "https://danxiagis.top:8081/assessment/getAllAssessment",
-      })
-        .then((response) => {
-          let res = response.data;
-          this.QuesList = [];
-          for (let i = 0; i < res.length; i++) {
-            this.QuesList.push({
-              title: res[i].title,
-              id: res[i]._id,
-              start: res[i].start_date.split("+")[0],
-              end: res[i].end_time.split("+")[0],
-            });
-          }
-        })
-        .catch((err) => {
-          alert(err);
-        });
-    },
-    load_past_que() {
-      axios({
-        method: "get",
-        url: "https://danxiagis.top:8081/passyearquestion/all/get", //passyearquestion/all/get
-      })
-        .then((response) => {
-          /* used_date:res[i].used_date.split(".")[0].replace("T", " ")||"" */
-
-          let res = response.data;
-          console.log("date", res);
-          this.past_QuesList = [];
-          for (let i = 0; i < res.length; i++) {
-            //找到数字
-            let str_year = res[i].used_years.match(/\d+/g);
-            //set去重，map将字符串变number
-            let year = [...new Set(str_year.map(Number))];
-            if (res[i].used_date != null)
-              res[i].used_date = res[i].used_date
-                .split(".")[0]
-                .replace("T", " ");
-            this.past_QuesList.push({
-              title: res[i].content,
-              id: res[i]._id,
-              used_time: res[i].used_time,
-              used_years: year,
-              used_date: res[i].used_date,
-            });
-          }
-        })
-        .catch((err) => {
-          alert(err);
-        });
-    },
-    load_notice() {
-      axios({
-        method: "get",
-        url: "https://danxiagis.top:8081/passyearnotice/all/get", //passyearquestion/all/get
-      })
-        .then((response) => {
-          let res = response.data;
-          for (let i = 0; i < res.length; i++) {
-            //找到数字
-            let str_year = res[i].used_years.match(/\d+/g);
-            //set去重，map将字符串变number
-            let year = [...new Set(str_year.map(Number))];
-            if (res[i].used_date != null)
-              res[i].used_date = res[i].used_date
-                .split(".")[0]
-                .replace("T", " ");
-            this.NoticeList.push({
-              title: res[i].content,
-              id: res[i]._id,
-              used_time: res[i].used_time,
-              used_years: year,
-              used_date: res[i].used_date,
-            });
-          }
-        })
-        .catch((err) => {
-          alert(err);
-        });
-    },
-    get_et() {
-      if (this.startDate > this.endDate && this.startDate && this.endDate) {
-        alert("开始时间不能比结束时间晚");
-        return;
-      }
-    },
-    deleteItem(item) {
-      //获取点击处的索引
-      this.editedIndex = this.detail.indexOf(item);
-      //拷贝过来
-      this.editedItem = Object.assign({}, item);
-      //弹删除窗
-      this.dialogDelete = true;
-    },
-    deleteItemConfirm() {
-      //http://localhost:8088/uploadData/deleteProfile
-      //删除掉被删除的那个item
-
-      //onsole.log(this.detail[this.editedIndex]);
-      let edited = this.detail[this.editedIndex];
-      //console.log('pdfffffffffff',typeof(edited.pdf));
-      axios({
-        method: "post",
-        url: "https://danxiagis.top:8081/uploadData/deleteProfile",
-        params: {
-          subject: edited.subject,
-          topic: edited.name,
-          chapter: edited.subject + "—" + edited.chapter,
-          filename: edited.pdf.split("/").pop(),
-          //
-        },
-      }).then((resp) => {
-        this.updateMaterial();
-        console.log(resp);
-        alert("删除成功");
-        this.detail.splice(this.editedIndex, 1);
-        this.closeDelete();
       });
-    },
-    closeDelete() {
-      this.dialogDelete = false;
-      this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-      });
-    },
+    };
 
-    alt() {
-      this.look = true;
-    },
-    loadClassList() {
-      axios({
-        method: "get",
-        url: "https://danxiagis.top:8081/uploadData/get",
-      }).then((resp) => {
-        // console.log(response.data);
-        const res = resp.data;
-        console.log("ressss", res);
-        //console.log('allllll',this.all);
-        //获取所有的资料的名称、章节、类型、科目、enable？？
-        for (let i = 0; i < res.length; i++) {
-          const resInfo = res[i].info;
-          //判断类型
-          for (let j = 0; j < resInfo.length; j++) {
-            let ty = "";
-            if (
-              resInfo[j].pdf.includes(".docx") &&
-              resInfo[j].pdf.includes(".doc")
-            ) {
-              ty = "Word";
-            } else if (
-              resInfo[j].pdf.includes(".ppt") &&
-              resInfo[j].pdf.includes(".pptx")
-            ) {
-              ty = "PPT";
-            } else if (resInfo[j].pdf.includes(".mp4")) {
-              ty = "MP4";
-            } else if (resInfo[j].pdf != "") {
-              ty = "PDF";
-            } else if (resInfo[j].video != "") {
-              ty = "视频";
-            }
-            //存
-            let send_time = resInfo[j].uploadTime
-              .split(".")[0]
-              .replace("T", " ");
-            const childItem = {
-              name: resInfo[j].topic,
-              type: ty,
-              chapter: resInfo[j].chapter,
-              enable: resInfo[j].enable,
-              subject: resInfo[j].subject,
-              pdf: resInfo[j].pdf,
-              time: send_time,
-            };
-            /* if (resInfo[j].subject == "自然地理")
-              this.items[1].value.push(childItem);
-            else if (resInfo[j].subject == "人文与经济地理")
-              this.items[2].value.push(childItem); */
-
-            this.childItems.push(childItem);
-          }
-          // 去除前缀 例：地图学—第一章，前面三个字和斜杠删掉
-          for (let i = 0; i < this.childItems.length; i++) {
-            let del_t = this.childItems[i].subject + "—";
-            let it_title = this.childItems[i].chapter.replace(del_t, "");
-            this.childItems[i].chapter = it_title;
-          }
-        }
-        this.detail = this.childItems;
-      });
-    },
-    checkinfo() {
-      if (this.type == "" || this.name == "" || this.chapter == "") {
-        alert("请检查是否有遗漏");
-        return;
-      } else if (this.type && this.name && this.chapter) {
-        alert("可以上传");
-      }
-      /*this.infodata =''
-      this.infodata = {
-        subject:this.type,
-        topic:this.name,
-        chapter:this.chapter,
-      }
-       axios({
-        method:'post',
-        url: "",
-        data:this.infodata,
-      }).then((response) => {
-      console.log(response)
-      },(error)=>{
-        console.log(this.infodata)
-        console.log(error)
-      }) */
-    },
-    getFileName(e) {
-      if (e != null) {
-        let t = e.name.indexOf(".");
-        this.name = e.name.substring(0, t);
-      } else this.name = "";
-    },
-    checkfile() {
-      if (this.type == "实习资料" && this.chapter == "") {
-        this.chapter = "实习资料";
-      }
-      if (
-        this.inputfile == "" ||
-        this.name == "" ||
-        this.chapter == "" ||
-        this.type == ""
-      ) {
-        alert("信息不完整，请再次检查");
-      } else {
-        //console.log('eeeeeeeeee',this.type);
-        this.cancelToken = axios.CancelToken.source();
-        this.IsSending = true;
-        let data = new FormData();
-        data.append("subject", this.type);
-        data.append("topic", this.name);
-        data.append("chapter", this.type + "—" + this.chapter);
-        data.append("file", this.inputfile);
-        axios({
-          method: "post",
-          url: "https://danxiagis.top:8081/uploadData/postProfile",
-          data: data,
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          cancelToken: this.cancelToken.token,
-        })
-          .then((response) => {
-            this.updateMaterial();
-            this.childItems = [];
-            /* 在JavaScript中，异步操作（如网络请求、定时器等）
-            不会阻塞代码的进一步执行。这意味着，虽然updateMaterial先开始执行，
-            但其内的异步请求需要时间来获得响应，而在这个等待时间内，
-            JavaScript不会停下来等待，而是继续执行下一个函数loadClassList */
-            this.loadClassList();
-            this.IsSending = false;
-            setTimeout(function () {
-              alert(response.data);
-            }, 500);
-            this.dialogKey++;
-          })
-          .catch((err) => {
-            this.IsSending = false;
-
-            if (axios.isCancel(err)) alert(err.message);
-            else alert("上传出错", err);
-          });
-      }
-    },
-    updateMaterial() {
-      axios({
-        method: "get",
-        url: "https://danxiagis.top:8081/uploadData/get",
-      }).then((response) => {
-        let res = response.data;
-        localStorage.setItem("meterial", JSON.stringify(res));
-        console.log("update", JSON.parse(localStorage.getItem("meterial")));
-      });
-    },
-    // 发布考核问题
-    QusSent() {
-      if (this.ques_text == "") {
-        alert("请输入问题");
-        return;
-      }
-      if (this.startDate == "") {
-        alert("请选择开始时间");
-        return;
-      }
-      if (this.endDate == "") {
-        alert("请选择结束时间");
-        return;
-      }
-      axios({
-        method: "post",
-        url: "https://danxiagis.top:8081/assessment/upAssessment", //https://danxiagis.top:8081/assessment/upAssessment
-        params: {
-          content: this.ques_text,
-          //title:
-          start_date: this.startDate.replace("T", " ") + ":00.000",
-          end_time: this.endDate.replace("T", " ") + ":00.000",
-          teacher: sessionStorage.getItem("teacheruuid"),
-          title: this.ques_text,
-        },
-      })
-        .then((response) => {
-          if (response.status >= 200 && response.status < 300) {
-            
-            this.QuesList.push({
-              title: this.ques_text,
-              id: response.data._id,
-              start: this.startDate,
-              end: this.endDate,
-            });
-            console.log('queList',this.QuesList);
-            alert("发布成功");
-
-            this.load_que();
-            this.load_past_que();
-          }
-        })
-        .catch((error) => {
-          alert(error);
-        });
-    },
-
-    //
-    qus_delete() {
-      let uuid = this.del_qus.id;
+    const qus_delete = () => {
+      let uuid = del_qus.id;
 
       axios({
         method: "post",
@@ -1276,63 +840,57 @@ export default {
       })
         .then((response) => {
           console.log(response);
-          for (let a = 0; a < this.QuesList.length; a++) {
-            if (uuid == this.QuesList[a].id) {
-              this.QuesList.splice(a, 1);
+          for (let a = 0; a < QuesList.value.length; a++) {
+            if (uuid == QuesList.value[a].id) {
+              QuesList.value.splice(a, 1);
               break;
             }
           }
           alert("删除成功");
-          this.showDeleteDialog = false;
+          showDeleteDialog.value = false;
         })
         .catch((err) => {
           alert(err);
         });
+    };
 
-      // console.log(this.QuesList)
-      //https://danxiagis.top:8081/assessment/teacher/deleteAssessment
-    },
-    past_qus_delete() {
-      let uuid = this.del_qus1.id;
-      //console.log('nameeeeee',name);
+    const past_qus_delete = () => {
+      let uuid = del_qus1.id;
 
       axios({
         method: "post",
-        url: "https://danxiagis.top:8081/passyearquestion/delete", //passyearquestion/all/get
+        url: "https://danxiagis.top:8081/passyearquestion/delete",
         params: {
           _id: uuid,
         },
       })
         .then((response) => {
           console.log(response);
-          for (let a = 0; a < this.past_QuesList.length; a++) {
-            if (uuid == this.past_QuesList[a].id) {
-              this.past_QuesList.splice(a, 1);
+          for (let a = 0; a < past_QuesList.value.length; a++) {
+            if (uuid == past_QuesList.value[a].id) {
+              past_QuesList.value.splice(a, 1);
               break;
             }
           }
           alert("删除成功");
-          this.showDeleteDialog1 = false;
+          showDeleteDialog1.value = false;
         })
         .catch((err) => {
           alert(err);
         });
+    };
 
-      // console.log(this.QuesList)
-      //https://danxiagis.top:8081/assessment/teacher/deleteAssessment
-    },
-    notice_delete(e) {
+    const notice_delete = (e) => {
       let uuid = e.id;
-      //console.log('nameeeeee',name);
-      for (let a = 0; a < this.NoticeList.length; a++) {
-        if (uuid == this.NoticeList[a].id) {
-          this.NoticeList.splice(a, 1);
+      for (let a = 0; a < NoticeList.value.length; a++) {
+        if (uuid == NoticeList.value[a].id) {
+          NoticeList.value.splice(a, 1);
           break;
         }
       }
       axios({
         method: "post",
-        url: "https://danxiagis.top:8081/passyearnotice/delete", //passyearquestion/all/get
+        url: "https://danxiagis.top:8081/passyearnotice/delete",
         params: {
           _id: uuid,
         },
@@ -1344,19 +902,110 @@ export default {
         .catch((err) => {
           alert(err);
         });
+    };
 
-      // console.log(this.QuesList)
-      //https://danxiagis.top:8081/assessment/teacher/deleteAssessment
-    },
-    async getDDL() {
+    const getDDL = async () => {
       let ddl = await reqGetDDL();
-      this.rpEndDate = ddl.data;
-      console.log(this.rpEndDate);
-    },
-  },
-  mounted() {
-    this.getDDL();
-  },
+      rpEndDate.value = ddl.data;
+      console.log(rpEndDate.value);
+    };
+
+    // 添加created生命周期中的方法
+    const loadClassList = () => {
+      // 实现loadClassList方法
+    };
+
+    const load_que = () => {
+      // 实现load_que方法
+    };
+
+    const load_past_que = () => {
+      // 实现load_past_que方法
+    };
+
+    const load_notice = () => {
+      // 实现load_notice方法
+    };
+
+    // 生命周期钩子
+    onMounted(() => {
+      getDDL();
+    });
+
+    // 替代created生命周期
+    loadClassList();
+    load_que();
+    load_past_que();
+    load_notice();
+
+    // 返回需要在模板中使用的内容
+    return {
+      rpEndDate,
+      dialogKey,
+      cancelToken,
+      IsSending,
+      dele_notice_dia,
+      item_time,
+      modifycontent,
+      showEditDialog,
+      showEditDialog1,
+      model,
+      selectedValue,
+      items,
+      dialoggg,
+      startDate,
+      endDate,
+      text,
+      look,
+      search,
+      dialog,
+      dialogDelete,
+      childItems,
+      num,
+      update_items,
+      type,
+      chapter,
+      name,
+      infodata,
+      inputfile,
+      editedIndex,
+      editedItem,
+      defaultItem,
+      list,
+      detail,
+      ques_text,
+      QuesList,
+      past_QuesList,
+      NoticeList,
+      all,
+      natural_checkbox,
+      human_checkbox,
+      ca_checkbox,
+      gis_checkbox,
+      edited_qus,
+      edited_qus1,
+      del_qus1,
+      del_qus,
+      showDeleteDialog1,
+      showDeleteDialog,
+      
+      // 方法
+      checkrpEndDate,
+      cancelUpload,
+      qus_edit,
+      qus_edit1,
+      qus_to_delete1,
+      qus_to_delete,
+      qus_delete,
+      past_qus_delete,
+      notice_delete,
+      getDDL,
+      loadClassList,
+      load_que,
+      load_past_que,
+      load_notice,
+    };
+  }
 };
 </script>
 

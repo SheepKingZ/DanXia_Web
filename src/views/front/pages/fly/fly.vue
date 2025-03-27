@@ -203,281 +203,236 @@
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 import { loadModules } from "esri-loader"; //Vue 文件中引入 esri-loader
-
-
+import { ref, reactive, shallowRef, computed, onMounted, onBeforeUnmount } from 'vue';
 
 export default {
-  data() {
-    return {
-  
-      path3_graphic: null,
-      path4_graphic: null,
-      whichRoute: 1,
-      
-      f1_show: false,
-      f2_show: false,
-      map: "",
-      mapConfig: {
-        container: "fly1",
-        sceneView: null,
-      },
-      schedule: "0", //浏览进度的值
-      lengthMax: "10", //浏览进度的最大值
-      //路线1的点
-      paths3: [
-        [113.749129, 25.0346],
-        [113.748968, 25.034131],
-        [113.748808, 25.033661],
-        [113.74844, 25.03338],
-        [113.747987, 25.033176],
-        [113.747535, 25.032971],
-        [113.747083, 25.032767],
-        [113.74675, 25.032428],
-        [113.746493, 25.032003],
-        [113.746156, 25.031702],
-        [113.745664, 25.031635],
-        [113.745172, 25.031569],
-        [113.745024, 25.031246],
-        [113.745099, 25.030755],
-        [113.745174, 25.030265],
-        [113.745233, 25.029805],
-        [113.744864, 25.030138],
-        [113.744445, 25.030253],
-        [113.744017, 25.030046],
-        [113.743717, 25.02965],
-        [113.743418, 25.029254],
-        [113.743118, 25.028859],
-        [113.742744, 25.028562],
-        [113.742281, 25.028384],
-        [113.741818, 25.028206],
-        [113.741416, 25.027974],
-        [113.741306, 25.02749],
-        [113.740845, 25.027616],
-        [113.740494, 25.027488],
-        [113.740196, 25.027124],
-        [113.739755, 25.026895],
-        [113.739315, 25.026665],
-        [113.738875, 25.026436],
-        [113.738435, 25.026207],
-        [113.738075, 25.025905],
-        [113.738149, 25.02559],
-        [113.738302, 25.025434],
-        [113.737887, 25.025162],
-        [113.737471, 25.02489],
-        [113.737036, 25.0247],
-        [113.736589, 25.024834],
-        [113.736176, 25.024748],
-        [113.735697, 25.024879],
-        [113.735442, 25.024725],
-        [113.735067, 25.024792],
-        [113.734603, 25.02497],
-        [113.738887, 25.029281],
-        [113.738595, 25.02888],
-        [113.738191, 25.028643],
-        [113.737711, 25.028517],
-        [113.737231, 25.028392],
-        [113.736894, 25.028028],
-        [113.736558, 25.027662],
-        [113.736223, 25.027297],
-        [113.736098, 25.026842],
-        [113.735788, 25.026485],
-        [113.735412, 25.026161],
-        [113.735037, 25.025837],
-        [113.734661, 25.025512],
-        [113.734531, 25.025063],
-      ],
-      //路线2的点
-      Paths4: [
-        [113.752649, 25.046907],
-        [113.752213, 25.04667],
-        [113.751777, 25.046432],
-        [113.751341, 25.046195],
-        [113.750905, 25.045958],
-        [113.750469, 25.045721],
-        [113.750033, 25.045484],
-        [113.749597, 25.045247],
-        [113.749161, 25.04501],
-        [113.748725, 25.044773],
-        [113.748289, 25.044536],
-        [113.747853, 25.044298],
-        [113.747417, 25.044061],
-        [113.746981, 25.043824],
-        [113.746538, 25.043602],
-        [113.746069, 25.043438],
-        [113.745601, 25.043275],
-        [113.745132, 25.043112],
-        [113.744663, 25.042949],
-        [113.744194, 25.042786],
-        [113.743715, 25.042693],
-        [113.743219, 25.042714],
-        [113.742734, 25.042683],
-        [113.742287, 25.042467],
-        [113.741929, 25.042676],
-        [113.741605, 25.043052],
-        [113.741273, 25.04342],
-        [113.740884, 25.043727],
-        [113.740494, 25.044034],
-        [113.740104, 25.044342],
-        [113.739714, 25.044649],
-        [113.739324, 25.044956],
-        [113.738934, 25.045263],
-        [113.738545, 25.04557],
-        [113.738114, 25.045761],
-        [113.737617, 25.045766],
-        [113.737121, 25.045772],
-        [113.736625, 25.045777],
-        [113.736184, 25.045697],
-        [113.735984, 25.045242],
-        [113.735513, 25.045199],
-        [113.735017, 25.045193],
-        [113.734611, 25.044955],
-        [113.734241, 25.044624],
-        [113.733784, 25.044455],
-        [113.733388, 25.044223],
-        [113.733272, 25.043741],
-        [113.733081, 25.043307],
-        [113.732669, 25.043055],
-        [113.732173, 25.043036],
-        [113.731679, 25.043019],
-        [113.731351, 25.043354],
-        [113.730885, 25.043184],
-        [113.73042, 25.043045],
-        [113.729967, 25.043248],
-        [113.729505, 25.043429],
-        [113.729015, 25.043439],
-        [113.728519, 25.043415],
-        [113.728023, 25.043389],
-        [113.727531, 25.043331],
-        [113.727038, 25.043272],
-        [113.726545, 25.043213],
-        [113.726052, 25.043154],
-        [113.72558, 25.043282],
-        [113.725103, 25.043311],
-        [113.724616, 25.043214],
-        [113.724175, 25.043331],
-        [113.724315, 25.04366],
-        [113.72467, 25.044006],
-        [113.724942, 25.044398],
-        [113.725154, 25.044776],
-        [113.725634, 25.0449],
-        [113.726115, 25.045024],
-        [113.726596, 25.045147],
-        [113.727077, 25.045271],
-        [113.727297, 25.045096],
-        [113.727546, 25.045526],
-        [113.727795, 25.045955],
-        [113.72782, 25.046434],
-        [113.727742, 25.046752],
-        [113.727246, 25.046772],
-        [113.727446, 25.047147],
-        [113.727721, 25.04756],
-        [113.727995, 25.047974],
-        [113.728328, 25.048275],
-        [113.72869, 25.048164],
-        [113.728543, 25.04769],
-        [113.728604, 25.047198],
-        [113.728785, 25.047172],
-        [113.72905, 25.04759],
-        [113.729264, 25.048038],
-      ],
-      cam: "",
-      route: 1, //实习路线选择框
-      speed: "2", //飞行速度
-      tickLabels: ["0","1", "2", "3", "4", "5"],
-      pointGraphic: null, //绘制的图形
-      polylineGraphic: null, //绘制的图形
-      route1: null,
-      route2: null,
+  setup() {
+    // 响应式状态
+    const path3_graphic = shallowRef(null);
+    const path4_graphic = shallowRef(null);
+    const whichRoute = ref(1);
+    
+    const f1_show = ref(false);
+    const f2_show = ref(false);
+    const map = shallowRef(null);
+    const mapConfig = reactive({
+      container: "fly1",
+      sceneView: null,
+    });
+    const schedule = ref("0"); //浏览进度的值
+    const lengthMax = ref("10"); //浏览进度的最大值
+    //路线1的点
+    const paths3 = ref([
+      [113.749129, 25.0346],
+      [113.748968, 25.034131],
+      [113.748808, 25.033661],
+      [113.74844, 25.03338],
+      [113.747987, 25.033176],
+      [113.747535, 25.032971],
+      [113.747083, 25.032767],
+      [113.74675, 25.032428],
+      [113.746493, 25.032003],
+      [113.746156, 25.031702],
+      [113.745664, 25.031635],
+      [113.745172, 25.031569],
+      [113.745024, 25.031246],
+      [113.745099, 25.030755],
+      [113.745174, 25.030265],
+      [113.745233, 25.029805],
+      [113.744864, 25.030138],
+      [113.744445, 25.030253],
+      [113.744017, 25.030046],
+      [113.743717, 25.02965],
+      [113.743418, 25.029254],
+      [113.743118, 25.028859],
+      [113.742744, 25.028562],
+      [113.742281, 25.028384],
+      [113.741818, 25.028206],
+      [113.741416, 25.027974],
+      [113.741306, 25.02749],
+      [113.740845, 25.027616],
+      [113.740494, 25.027488],
+      [113.740196, 25.027124],
+      [113.739755, 25.026895],
+      [113.739315, 25.026665],
+      [113.738875, 25.026436],
+      [113.738435, 25.026207],
+      [113.738075, 25.025905],
+      [113.738149, 25.02559],
+      [113.738302, 25.025434],
+      [113.737887, 25.025162],
+      [113.737471, 25.02489],
+      [113.737036, 25.0247],
+      [113.736589, 25.024834],
+      [113.736176, 25.024748],
+      [113.735697, 25.024879],
+      [113.735442, 25.024725],
+      [113.735067, 25.024792],
+      [113.734603, 25.02497],
+      [113.738887, 25.029281],
+      [113.738595, 25.02888],
+      [113.738191, 25.028643],
+      [113.737711, 25.028517],
+      [113.737231, 25.028392],
+      [113.736894, 25.028028],
+      [113.736558, 25.027662],
+      [113.736223, 25.027297],
+      [113.736098, 25.026842],
+      [113.735788, 25.026485],
+      [113.735412, 25.026161],
+      [113.735037, 25.025837],
+      [113.734661, 25.025512],
+      [113.734531, 25.025063],
+    ]);
+    //路线2的点
+    const paths4 = ref([
+      [113.752649, 25.046907],
+      [113.752213, 25.04667],
+      [113.751777, 25.046432],
+      [113.751341, 25.046195],
+      [113.750905, 25.045958],
+      [113.750469, 25.045721],
+      [113.750033, 25.045484],
+      [113.749597, 25.045247],
+      [113.749161, 25.04501],
+      [113.748725, 25.044773],
+      [113.748289, 25.044536],
+      [113.747853, 25.044298],
+      [113.747417, 25.044061],
+      [113.746981, 25.043824],
+      [113.746538, 25.043602],
+      [113.746069, 25.043438],
+      [113.745601, 25.043275],
+      [113.745132, 25.043112],
+      [113.744663, 25.042949],
+      [113.744194, 25.042786],
+      [113.743715, 25.042693],
+      [113.743219, 25.042714],
+      [113.742734, 25.042683],
+      [113.742287, 25.042467],
+      [113.741929, 25.042676],
+      [113.741605, 25.043052],
+      [113.741273, 25.04342],
+      [113.740884, 25.043727],
+      [113.740494, 25.044034],
+      [113.740104, 25.044342],
+      [113.739714, 25.044649],
+      [113.739324, 25.044956],
+      [113.738934, 25.045263],
+      [113.738545, 25.04557],
+      [113.738114, 25.045761],
+      [113.737617, 25.045766],
+      [113.737121, 25.045772],
+      [113.736625, 25.045777],
+      [113.736184, 25.045697],
+      [113.735984, 25.045242],
+      [113.735513, 25.045199],
+      [113.735017, 25.045193],
+      [113.734611, 25.044955],
+      [113.734241, 25.044624],
+      [113.733784, 25.044455],
+      [113.733388, 25.044223],
+      [113.733272, 25.043741],
+      [113.733081, 25.043307],
+      [113.732669, 25.043055],
+      [113.732173, 25.043036],
+      [113.731679, 25.043019],
+      [113.731351, 25.043354],
+      [113.730885, 25.043184],
+      [113.73042, 25.043045],
+      [113.729967, 25.043248],
+      [113.729505, 25.043429],
+      [113.729015, 25.043439],
+      [113.728519, 25.043415],
+      [113.728023, 25.043389],
+      [113.727531, 25.043331],
+      [113.727038, 25.043272],
+      [113.726545, 25.043213],
+      [113.726052, 25.043154],
+      [113.72558, 25.043282],
+      [113.725103, 25.043311],
+      [113.724616, 25.043214],
+      [113.724175, 25.043331],
+      [113.724315, 25.04366],
+      [113.72467, 25.044006],
+      [113.724942, 25.044398],
+      [113.725154, 25.044776],
+      [113.725634, 25.0449],
+      [113.726115, 25.045024],
+      [113.726596, 25.045147],
+      [113.727077, 25.045271],
+      [113.727297, 25.045096],
+      [113.727546, 25.045526],
+      [113.727795, 25.045955],
+      [113.72782, 25.046434],
+      [113.727742, 25.046752],
+      [113.727246, 25.046772],
+      [113.727446, 25.047147],
+      [113.727721, 25.04756],
+      [113.727995, 25.047974],
+      [113.728328, 25.048275],
+      [113.72869, 25.048164],
+      [113.728543, 25.04769],
+      [113.728604, 25.047198],
+      [113.728785, 25.047172],
+      [113.72905, 25.04759],
+      [113.729264, 25.048038],
+    ]);
+    const route1DensifiedPolyline = shallowRef(null); //加密的路径
+    const route2DensifiedPolyline = shallowRef(null); //加密的路径
+    const cam = shallowRef(null); //摄像机
+    const route = ref(1); //实习路线选择框
+    const speed = ref("2"); //飞行速度
+    const tickLabels = ref(["0.5", "0.6", "0.8", "1", "2", "3"]);
+    const pointGraphicLayer = shallowRef(null); //点图形
+    const pointGraphic = shallowRef(null); //点图形
+    const polylineGraphic = shallowRef(null); //线图形
+    const sketchViewModel = shallowRef(null); //画线工具
+    const option = ref(false);
+    const paths = ref([]); //自定义飞行的路径点
+    const pathPointGraphicList = ref([]); //保存自定义飞行路径上加密生成的顶点图形
+    const isFlying = ref(false);
+    const changeHeadingLeft = ref(false);
+    const changeHeadingRight = ref(false);
+    const changeTiltUp = ref(false);
+    const changeTiltDown = ref(false);
+    const changeZHigher = ref(false);
+    const changeZLower = ref(false);
+    const refly = ref(false);
+    const skeTool = shallowRef(null);
+    const point = shallowRef(null);
+    const long = ref("");
+    const lat = ref("");
+    const skeCreate = shallowRef(null);
+    const rqfId = shallowRef(null);
+    const nowTime = ref(0);
+    const nowTilt = ref(60);
+    const nowHeading = ref(0);
+    const nowZ = ref(100);
 
-      graphicsLayer: null, //绘制图层
-      option: false,
-      sketchViewModel: null, //绘制折线的工具
-      
-      point: null, //绘制的点转为gemory
-      //存储用户画的点的经纬度及高程
-      paths: [],
-      homeCam: "", //初始视图
-      ccWidget: null, //坐标控件
-      isFlying: true,
-      lat: "",
-      long: "",
-      pathsLayer: null,
-      pathPointGraphicList: [],
-      heading: null,
-      oldHeading: null,
-
-      initHeading: null,
-      changeTiltUp: false,
-      changeTiltDown: false,
-      changeHeadingRight: false,
-      changeHeadingLeft: false,
-      changeZHigher:false,
-      changeZLower:false,
-      pointGraphicLayer: null,
-      path3Camera: {
-        /* position: [113.75188244098082, 25.03604345704657, 451], */
-        position: {
-          latitude: 25.03762606081014,
-          longitude: 113.7551462604906,
-          z: 700,
-        },
-        tilt: 70,
-        heading: 240,
-      },
-      path4Camera: {
-        /* position: [113.75426058335641, 25.04787171916136, 190], */
-        position: {
-          latitude: 25.04903298145219,
-          longitude: 113.75673760288505,
-          z: 400,
-        },
-        tilt: 70,
-        heading: 240,
-      },
-      elevationSampler: null,
-      turn: false,
-      flyingGraphicsLayer:null,
-      initPartPolylinePaths:[],
-      refly:false,
-      partgeometryExtent:null,
-      cameraTilt:70,
-      changeSchedule:false
-    };
-  },
-  watch: {
-    // 监听 heading 的变化
-    heading(newVal, oldVal) {
-      // 在 heading 改变时，保存前一次和当前的值
-      this.oldHeading = oldVal; // 保存上一次的值
-      // newVal 已经是当前的heading值
-    },
-  },
-  methods: {
+    // 方法部分
     //创建地图
-    _createMapView() {
-      const _self = this; //定义一个_self防止后续操作中this丢失
+    const _createMapView = () => {
+      NProgress.start();
+      
       const option = {
-        //定义一个包含有JS API中js开发包和css样式文件的对象
         url: "https://js.arcgis.com/4.19/init.js",
         css: "https://js.arcgis.com/4.19/esri/themes/light/main.css",
       };
-      //通过loadModules来做衔接
+      
       loadModules(
         [
           "esri/Map",
-          "esri/views/SceneView", //3D场景视图
+          "esri/views/SceneView",
           "esri/layers/SceneLayer",
           "esri/Camera",
+          "esri/geometry/Point",
+          "esri/geometry/Polyline",
           "esri/Graphic",
           "esri/layers/GraphicsLayer",
-          "esri/layers/FeatureLayer",
           "esri/widgets/Sketch/SketchViewModel",
           "esri/geometry/Point",
-          "esri/widgets/CoordinateConversion",
-          "esri/geometry/Polyline",
           "esri/geometry/geometryEngine",
-          "esri/layers/support/ElevationSampler",
-          "esri/geometry/support/webMercatorUtils",
         ],
         option
       )
@@ -487,883 +442,669 @@ export default {
             SceneView,
             SceneLayer,
             Camera,
+            Point,
+            Polyline,
             Graphic,
             GraphicsLayer,
-            FeatureLayer,
             SketchViewModel,
-            Point,
-            ElevationSampler,
-            Polyline,
+            Point_1,
             geometryEngine,
-            webMercatorUtils,
-            /* CoordinateConversion, */
           ]) => {
-            //业务代码在此处编写
-            _self.graphicsLayer = new GraphicsLayer({
+            //初始化图层 GraphicsLayer：图形层
+            pointGraphicLayer.value = new GraphicsLayer({
+              //点图层，自定义飞行的点
               elevationInfo: { mode: "on-the-ground" },
             });
-            _self.flyingGraphicsLayer=new GraphicsLayer({
-              elevationInfo: { mode: "on-the-ground" },
-            });
-            _self.map = new Map({
-              //实例化地图
+            
+            map.value = new Map({
               basemap: "hybrid",
               ground: "world-elevation",
+              layers: [pointGraphicLayer.value],
             });
 
-            _self.mapConfig.sceneView = new SceneView({
-              //准备地图视图
-              map: _self.map,
+            //初始化视图
+            const center = [113.75665604199996, 25.04682589249998];
+            
+            mapConfig.sceneView = new SceneView({
+              map: map.value,
+              center: center,
               zoom: 14,
               camera: {
-                /* 113.749129, 25.0346 */
                 position: {
                   x: 113.773052,
                   y: 25.046557,
                   z: 800,
                 },
-
-                tilt: 70, //tilt属性值在地球视图中，相机垂直地面的方向为0，当相机平行于表面时为90度。  俗称倾斜角度
-                heading: 240, //偏北角。heading值在地球视图中，以正北方向值为0，顺时针增加，如：正东方向为90，范围是0-360
+                tilt: 0,
+                heading: 0,
               },
-              /* spatialReference:{wkid:102100}, */
-              container: _self.mapConfig.container,
+              container: mapConfig.container,
             });
-            console.log("map", _self.mapConfig.sceneView);
-            _self.mapConfig.sceneView.on("immediate-click", (event) => {
-              _self.mapConfig.sceneView
-                .hitTest(event)
-                .then((hitTestResult) => {
-                  let res = hitTestResult.ground.mapPoint;
-                  this.lat = res.latitude.toFixed(6);
-                  this.long = res.longitude.toFixed(6);
-                  console.log("camera", _self.mapConfig.sceneView.camera);
-                })
-                .catch((error) => {
-                  console.error(error);
-                });
+            
+            //地图点击事件,显示坐标
+            mapConfig.sceneView.on("click", function (event) {
+              const mapPoint = mapConfig.sceneView.toMap({
+                x: event.x,
+                y: event.y,
+              });
+              long.value = mapPoint.longitude.toFixed(8);
+              lat.value = mapPoint.latitude.toFixed(8);
+
+              console.log("点击位置:" + long.value + "," + lat.value);
             });
 
-            /*  _self.mapConfig.sceneView.ui.components  = []; */ // 删除默认控件
-            const sceneLayer = new SceneLayer({
-              url: "https://danxiagis.top/arcgisserver/rest/services/Hosted/redDOOR_Project/SceneServer",
-              popupEnabled: false, //单击图层中的要素时是否显示弹出窗口
-            });
-            let boder_featureLayer = new FeatureLayer({
-              url: "https://danxiagis.top:6443/arcgis/rest/services/DanXia/danxiaBorder/FeatureServer",
-              renderer: {
-                type: "simple",
-                symbol: {
-                  type: "simple-line",
-                  width: "3px",
-                  color: "#BB5500",
-                },
-              },
-            });
-            _self.map.add(boder_featureLayer);
-            //将paths转为要素并加入图层
-            let fields = [
-              {
-                name: "ObjectID",
-                type: "oid",
-              },
-              {
-                name: "name",
-                type: "string",
-              },
-            ];
-            let symbol = {
-              type: "simple-line",
-              color: "red",
+            //图形显示组件
+            pointGraphic.value = new Graphic();
+            polylineGraphic.value = new Graphic();
+
+            //camera相机对象，用于查看沿路径前进
+            cam.value = new Camera();
+
+            point.value = new Point_1();
+
+            //创建自定义的飞行路径的直线1
+            const polyline3 = {
+              //这里是在设计直线的颜色和粗细，symbol是符号的意思
+              type: "polyline", // autocasts as new PolylineSymbol()
+              // 路径的颜色
+              color: [226, 119, 40],
+              //路径的宽度，就是粗细
               width: 4,
             };
-            _self.pathsLayer = new FeatureLayer({
-              fields,
-              objectIdField: "ObjectID",
-              geometryType: "polyline",
-              source: [],
-              spatialReference: { wkid: 102100 },
-              renderer: {
-                type: "simple",
-                symbol,
-              },
-            });
-            /*  //将两条path加入图层 */
-            this.path3_graphic = new Graphic({
-              geometry: {
-                type: "polyline",
-                paths: _self.paths3,
-              },
-              attributes: {
-                ObjectID: 1,
-                name: "第一天",
-              },
-            });
 
-            this.path4_graphic = new Graphic({
-              geometry: {
-                type: "polyline",
-                paths: _self.Paths4,
-              },
-              attributes: {
-                ObjectID: 2,
-                name: "第二天",
-              },
-            });
-            this.pointGraphicLayer = new GraphicsLayer({
-              spatialReference: { wkid: 102100 },
-            });
-            _self.map.add(this.pointGraphicLayer);
-            _self.map.add(this.flyingGraphicsLayer);
-            _self.pathsLayer.source.push(this.path3_graphic);
-            _self.pathsLayer.source.push(this.path4_graphic);
-            _self.map.add(_self.pathsLayer);
-            //画出的线的样式
-            _self.cam = new Camera();
-            _self.homeCam = new Camera();
-            _self.map.add(sceneLayer);
-            //自定义中画出的线的样式
-            const line = {
-              type: "line-3d",
-              symbolLayers: [
-                {
-                  type: "line",
-                  size: "8px",
-                  material: {
-                    color: "blue",
-                  },
-                },
-              ],
+            //创建直线，使用的是原始的点，routes1和routes2
+            const polyline3Geometry = {
+              //几何形状的类型
+              type: "polyline",
+              //里面存储的是点的坐标
+              paths: paths3.value,
             };
-            //设置sketchViewModel
-            _self.sketchViewModel = new SketchViewModel({
-              layer: _self.graphicsLayer,
-              view: _self.mapConfig.sceneView,
+
+            //定义直线2，与直线一样
+            const polyline4 = {
+              type: "polyline",
+              color: [255, 0, 0],
+              width: 5,
+            };
+
+            //定义直线2的图形
+            const polyline4Geometry = {
+              type: "polyline",
+              paths: paths4.value,
+            };
+
+            //生成路径图形1
+            path3_graphic.value = new Graphic({
+              geometry: polyline3Geometry,
+              symbol: polyline3,
+            });
+
+            //生成路径图形2
+            path4_graphic.value = new Graphic({
+              geometry: polyline4Geometry,
+              symbol: polyline4,
+            });
+
+            //创建折线1的对象
+            const simpleLineSymbol = {
+              type: "simple-line",
+              color: [226, 119, 40],
+              width: 2,
+            };
+
+            //折线1的形状属性,这里Polyline是加载的类
+            const polyline1 = new Polyline({
+              paths: paths3.value,
+            });
+
+            //加密
+            route1DensifiedPolyline.value = geometryEngine.densify(polyline1, 50, "meters");
+
+            //折线1的图形
+            const polylineGraphic1 = new Graphic({
+              geometry: route1DensifiedPolyline.value,
+              symbol: simpleLineSymbol,
+            });
+
+            //创建折线2的对象
+            const simpleLineSymbol2 = {
+              type: "simple-line",
+              color: [226, 119, 40],
+              width: 2,
+            };
+
+            //折线2的形状属性,这里Polyline是加载的类
+            const polyline2 = new Polyline({
+              paths: paths4.value,
+            });
+
+            //加密
+            route2DensifiedPolyline.value = geometryEngine.densify(polyline2, 50, "meters");
+
+            //折线2的图形
+            const polylineGraphic2 = new Graphic({
+              geometry: route2DensifiedPolyline.value,
+              symbol: simpleLineSymbol2,
+            });
+
+            // 设置鼠标和自定义绘制工具的设置
+            // 1. 设置草图工具的颜色样式
+            const line = {
+              type: "simple-line",
+              color: [255, 0, 122],
+              width: 5,
+            };
+
+            // 2. 设置绘制工具
+            sketchViewModel.value = new SketchViewModel({
+              layer: pointGraphicLayer.value,
+              view: mapConfig.sceneView,
               polylineSymbol: line,
-              snappingOptions: "selfEnabled", //捕捉自己的状态
-            });
-            _self.point = new Point();
-
-            //显示此时坐标
-            /* _self.ccWidget = new CoordinateConversion({
-              view: _self.mapConfig.sceneView,
-            });
-            _self.mapConfig.sceneView.ui.add(_self.ccWidget, "bottom-left"); */
-            //实例化图形和绘制图层
-            _self.pointGraphic = new Graphic();
-            _self.polylineGraphic = new Graphic();
-            _self.nowPointGraphic=new Graphic()
-            //  添加图层
-            _self.map.add(_self.graphicsLayer);
-
-            _self.route1 = new FeatureLayer({
-              url: "https://danxiagis.top:6443/arcgisserver/rest/services/DanXia/practiceRoutes/FeatureServer/0",
-              renderer: {
-                type: "simple",
-                symbol: {
-                  type: "simple-line",
-                  width: "5px",
-                  color: "#c6c33e",
-                },
-              },
-            });
-            _self.route2 = new FeatureLayer({
-              url: "https://danxiagis.top:6443/arcgisserver/rest/services/DanXia/practiceRoutes/FeatureServer/1",
-              renderer: {
-                type: "simple",
-                symbol: {
-                  type: "simple-line",
-                  width: "5px",
-                  color: "#c6c33e",
-                },
-              },
+              snappingOptions: "selfEnabled", // 捕捉自己的状态
             });
 
-            _self.mapConfig.sceneView
-              .when()
-              .then(function () {
-                // 完成加载
-                _self.elevationSampler =
-                  _self.mapConfig.sceneView.groundView.elevationSampler;
-                NProgress.done();
-              })
-              .catch(function (error) {
-                console.error("地图加载出错: ", error);
-                NProgress.done();
-              });
+            // 3. 用于捕捉点的位置
+            point.value = new Point();
+            
+            NProgress.done();
           }
         )
         .catch((err) => {
-          alert("地图创建失败，" + err); //catch异常
+          alert("地图创建失败，" + err);
+          NProgress.done();
         });
-    },
-    getSchedule(){
-      let self=this
-      this.changeSchedule=true;
-    
-      let camera=this.mapConfig.sceneView.camera.clone()
-      /* this.pathPointGraphicList[this.schedule].geometry.z=600 */
-      let tar=this.pathPointGraphicList[this.schedule].geometry
-      camera.position.longitude=tar.longitude
-      camera.position.latitude=tar.latitude
-      camera.tilt=this.cameraTilt
+    };
+
+    // 加密路线
+    const densifyLine = (route) => {
+      f1_show.value = true;
+      f2_show.value = false;
+      pointGraphicLayer.value.removeAll(); // 删除所有点
+      pathPointGraphicList.value = []; // 清空存储的图形
+      refly.value = false;
       
-      this.mapConfig.sceneView.goTo(camera).then(()=>{
-        self.fly_test(this.schedule)
-      })
-      
-      
-      
-      
-    },
-    ZoneTo() {
-      this.f1_show = true;
-      this.f2_show = false;
-      this.mapConfig.sceneView.goTo(this.path3Camera);
-    },
-    customRoute() {
-      this.whichRoute = 3;
-    },
-    densifyLine(IF) {
-      
-      /* 如果点击了那个按钮 */
-      if (IF) {
-        this.sketchViewModel.cancel();
-        this.ZoneTo();
-        
+      let routeGraphic;
+      if (route === 1) {
+        pointGraphicLayer.value.add(path3_graphic.value);
+        routeGraphic = route1DensifiedPolyline.value;
+      } else {
+        pointGraphicLayer.value.add(path4_graphic.value);
+        routeGraphic = route2DensifiedPolyline.value;
       }
       
-      const _self = this; //定义一个_self防止后续操作中this丢失
-      const option = {
-        //定义一个包含有JS API中js开发包和css样式文件的对象
-        url: "https://js.arcgis.com/4.19/init.js",
-        css: "https://js.arcgis.com/4.19/esri/themes/light/main.css",
-      };
-      //通过loadModules来做衔接
-      loadModules(
-        [
-          "esri/geometry/geometryEngine",
-          "esri/geometry/Point",
-          "esri/Graphic",
-          "esri/geometry/Polyline",
-          "esri/layers/GraphicsLayer",
-          "esri/geometry/support/webMercatorUtils",
-          "esri/layers/support/ElevationSampler",
-         
-        ],
-        option
-      )
-        .then(
-          ([
-            geometryEngine,
-            Point,
-            Graphic,
-            Polyline,
-            GraphicsLayer,
-            webMercatorUtils,
-            ElevationSampler,
-            
-          ]) => {
-            this.pointGraphicLayer.removeAll();
-            this.pathPointGraphicList = [];
-            let paths = null;
-            
-            if (this.whichRoute == 3) paths = this.paths;
-            else paths = this.whichRoute == 1 ? this.paths3 : this.Paths4;
-            // 创建Polyline对象
-            let geometry = new Polyline({
-              hasZ: true,
-              hasM: false,
-              paths: [paths], 
-              spatialReference: { wkid: 102100 }, 
-            });
+      // 计算最大值
+      lengthMax.value = routeGraphic.paths[0].length - 1;
+    };
 
-            let totalLength = geometryEngine.geodesicLength(geometry, "meters");
-
-            let segLength = totalLength / 100;
-            /* 返回被加密处理的点的点坐标集paths:[{lng,lat,z},{lng,lat,z}]，而不是geometry集 */
-            let desifiedPolylineList = geometryEngine.densify(
-              geometry,
-              segLength,
-              "meters"
-            );
-            console.log('desifiedPolylineList',desifiedPolylineList.paths);
-            
-            for (let i = 0; i < desifiedPolylineList.paths[0].length; i++) {
-              let point = desifiedPolylineList.paths[0][i];
-              let graphic = new Graphic({
-                geometry: new Point({
-                  x: point[0],
-                  y: point[1],
-                }),
-                symbol: {
-                  type: "simple-marker",
-                  size: 2,
-                  color: "green",
-                  style: "circle",
-                },
-              });
-              
-             
-              /* 投影，此时的graphic刚创建其geometry是4326的地理坐标系，其x、y与地理坐标系相等 */
-              graphic.geometry = webMercatorUtils.geographicToWebMercator(
-                graphic.geometry
-              );
-              this.pathPointGraphicList.push(graphic);
-              /* this.path3_graphic.geometry =webMercatorUtils.geographicToWebMercator(this.path3_graphic.geometry);
-            this.path4_graphic.geometry =webMercatorUtils.geographicToWebMercator(this.path4_graphic.geometry); */
-
-              this.pointGraphicLayer.add(graphic);
-            }
-
-            _self.pathPointGraphicList.forEach((graphic) => {
-              
-              if (_self.elevationSampler) {
-                let updatedGeometry = _self.elevationSampler.queryElevation(
-                  graphic.geometry
-                );
-                if (updatedGeometry && updatedGeometry.z !== undefined) {
-                  graphic.geometry.z = updatedGeometry.z;
-                }
-              } else {
-                console.log("ElevationSampler未就绪");
-              }
-            });
-            /* 给自定义线设置初始视角--为第一次和第二次下点的那条线的方向
-              默认路线path3和Path4都设置了各自的camera，视角已写死
-            */
-           
-            if(this.whichRoute==3)
-            {
-              let partgeometry = new Polyline({
-                hasZ: true,
-                hasM: false,
-                paths: [this.initPartPolylinePaths], 
-                spatialReference: { wkid: 102100 }, 
-              })
-              /* extent里面的坐标用的还是longlat，要调过来 */
-                this.partgeometryExtent=webMercatorUtils.geographicToWebMercator(
-                partgeometry.extent
-                );
-                this.moveToCustom(this.partgeometryExtent)
-               
-               
-                 /* 弄完之后就清零，否则下一次还会有 */
-                this.initPartPolylinePaths=[]
-            }
-            
-            
-            /*  */
-            /* 如果使用计时器等待sceneView加载完成会导致，若切换视角后重新加载sceneView，
-              不够定时器内的时间，高程会提取不出来，camera的z值变化就会出问题
-
-              elevationSampler必须等scene加载完才不是undefined
-              
-              还需要外部点击，触发，
-              */
-           
-            this.lengthMax=this.pathPointGraphicList.length
-           
-          }
-        )
-        .catch((err) => {
-          console.error(err);
-        });
-    },
-    changeCam() {
-      if (this.whichRoute === "1") {
-        return this.mapConfig.sceneView.goTo(this.path3Camera);
-      } else if (this.whichRoute === "2") {
-        return this.mapConfig.sceneView.goTo(this.path4Camera);
-      }
-      // 如果没有匹配的路线，返回一个解析的 Promise
-      return Promise.resolve();
-    },
-
-
+    // 获取进度表
+    const getSchedule = (value) => {
+      refly.value = false;
+      let routeGraphic;
       
-
-    /* 点击飞行的时候，就必须调整头的朝向向前 */
-     fly_test(i) {
-      /* if(this.changeSchedule)
-      {
-        console.log('return');
-        return
-      } */
-      this.schedule=i
-      // 结束条件：当索引值 i 达到 pathPointGraphicList 的长度减一时
-      if (i >= this.pathPointGraphicList.length - 1) {
-        setTimeout(()=>{
-          this.flyingGraphicsLayer.removeAll()
-        },2000)
+      // 通过 route 判断使用哪个路线图形
+      if (route.value === 1) {
+        routeGraphic = route1DensifiedPolyline.value;
+      } else {
+        routeGraphic = route2DensifiedPolyline.value;
+      }
+      
+      // 计算进度
+      const index = value;
+      
+      if (index >= routeGraphic.paths[0].length) {
         return;
       }
-      let currentPoint = this.pathPointGraphicList[i].geometry;
-      let nextPoint = this.pathPointGraphicList[i + 1].geometry;
       
-      let dy = nextPoint.latitude - currentPoint.latitude;
-      let dx = nextPoint.longitude - currentPoint.longitude;
-      let dz = nextPoint.z - currentPoint.z;
-      /* const distance = Math.sqrt(dx * dx + dy * dy);
-    
-      // 计算俯仰角
-      const tiltRadians = Math.atan2(dz, distance);
-      const tiltDegrees = tiltRadians * (180 / Math.PI); */
-      let markerSymbol = {
-        type:'simple-marker',
-        color: [226, 119, 40],  // RGB 颜色数组
-        size: "20px", 
-        style:'circle'
-      };
-      this.nowPointGraphic= {
-      geometry: currentPoint,
-      symbol: markerSymbol
-    };
-    /* 飞完之后或者再次点击飞行，而不是重新飞行，黄色进度条要清除， */
-    this.flyingGraphicsLayer.add(this.nowPointGraphic)
-      this.heading = this.calcHeading(currentPoint, nextPoint);
-      /* console.log('heading',this.heading); */
+      // 获取当前点和下一个点
+      const currentPoint = routeGraphic.paths[0][index];
       
-      /* if(Math.abs(this.oldHeading-this.newHeading)>90&&i!=1)
-        speed=10 */
-      // 得出之差，传入 shiftCamera()
-      this.mapConfig.sceneView
-        .goTo(
-          this.shiftCamera(
-            dy,
-            dx,
-            dz,
-            this.heading /* ,tiltDegrees */,
-            currentPoint,
-            nextPoint,
-            
-          ),
-          {
-            speedFactor: this.speed,
-            easing: "linear",
-          }
-        )
-        .then(async () => {
-          if(this.refly){
-            /* 进度清零 */
-            if(this.whichRoute==3)
-              await this.moveToCustom(this.partgeometryExtent)
-            else
-              await this.change_view()  
-            
-            this.refly=false
-            this.fly_test(0);
-          }
-          // 递归调用，处理下一个路径点
-          else if(this.isFlying)
-            this.fly_test(i + 1);
-          else 
-           {
-            this.isFlying=true
-            return
-           }
-        }).catch(err=>{
-         if(err.message=='Aborted')
-          setTimeout(()=>{
-            this.flyingGraphicsLayer.removeAll()
-          },2000)
-        });
-    },
-    /* 如果可以的话，加个鹰眼吧，显示当前路径到哪了，可能有点难哦 
-    路线二第一个弯道真是见了鬼了。。。尝试过两个角的绝对值相减>90的时候满足type1，两个点的角之差的绝对值大于90意外的符合路线1呢
-    先把sketch搞定吧，用sketch测试各种可能
-*/
-    shiftCamera(
-      y_deg,
-      x_deg,
-      z_deg,
-      heading,
-      currentPoint,
-      nextPoint, /* ,tiltDegrees */
-   
-    ) {
-      const camera = this.mapConfig.sceneView.camera.clone();
-      
-      const smoothedHeading = this.lerpAngle(this.heading, heading, 0.8);
-      camera.target=[currentPoint.x,currentPoint.y]
-      //转弯的临界在哪里啊啊啊啊啊啊啊啊啊
-      /* if(this.oldHeading!=null&&Math.abs(this.oldHeading - this.heading)>45)
-      {
-        camera.heading = smoothedHeading;
+      // 计算真实方向
+      if (index + 1 < routeGraphic.paths[0].length) {
+        const nextPoint = routeGraphic.paths[0][index + 1];
         
-        console.log(
-            `Heading changed from ${this.oldHeading} to ${this.heading}`
+        // 计算航向角
+        nowHeading.value = bearing(
+          currentPoint[0],
+          currentPoint[1],
+          nextPoint[0],
+          nextPoint[1]
         );
-        
-      } */
-
-      
-      camera.position.longitude += x_deg*1.2  ;
-      camera.position.latitude += y_deg *1.1;
-      /* camera.position.z += z_deg*1.3; */
-      /* camera.tilt=tiltDegrees */
-      let titlAdd = 15;
-      /* let initHeading=camera.heading */
-      if (this.changeHeadingLeft == true) {
-        camera.heading -= 15;
-        this.changeHeadingLeft = false;
-        /* console.log("现在现在", camera.heading); */
-      } else if (this.changeHeadingRight == true) {
-        camera.heading += 15;
-        this.changeHeadingRight = false;
-      }
-
-      if (this.changeTiltUp == true) {
-        if (camera.tilt + titlAdd >= 90) titlAdd = 0;
-        camera.tilt += titlAdd;
-        this.changeTiltUp = false;
-      } else if (this.changeTiltDown == true) {
-        if (camera.tilt - titlAdd <= 0) titlAdd = 0;
-        camera.tilt -= titlAdd;
-        this.changeTiltDown = false;
-      }
-
-      if(this.changeZHigher==true)
-      {
-        camera.position.z+=50
-        this.changeZHigher=false
-      }else if(this.changeZLower==true)
-      {
-        camera.position.z-=50
-        this.changeZLower=false
-      }
-      /* console.log('camera.heading',camera.heading); */
-      return camera;
-    },
-
-    change_view(e,isInit) {
-      this.whichRoute = e;
-      
-      if (e == "1") {
-        this.cam = this.path3Camera;
-      } else if (e == "2") {
-        this.cam = this.path4Camera;
       }
       
-      return this.mapConfig.sceneView
-        .goTo(this.cam)
-        .then(() => {
-          console.log("已经移动到");
-          this.schedule=0
-          if(isInit)
-            this.densifyLine();
-          return 'ok'
-        })
-        .catch((err) => {
-          console.log("移动到 path4Camera 失败:", err,this.cam);
-          return Promise.reject(new Error('fail'))
-        });
-    },
-    //激活sketchviewModel工具
-    creatSke() {
-      const option = {
-        //定义一个包含有JS API中js开发包和css样式文件的对象
-        url: "https://js.arcgis.com/4.19/init.js",
-        css: "https://js.arcgis.com/4.19/esri/themes/light/main.css",
+      // 设置相机
+      cam.value = {
+        position: [currentPoint[0], currentPoint[1], currentPoint[2] + nowZ.value],
+        heading: nowHeading.value,
+        tilt: nowTilt.value,
       };
-      loadModules(["esri/geometry/support/webMercatorUtils"], option).then(
-        ([webMercatorUtils]) => {
-          const _self = this;
-
-          _self.sketchViewModel.create("polyline");
-          //设置SketchViewModel的监听状态，当绘画完成后、取消后
-          /* 先清除，不然每次画的点都被重复push进paths */
-          _self.clean()
-          _self.paths=[]
-          const skeCreate = _self.sketchViewModel.on(
-            "create",
-            function (event) {
-              /* 绑定create后就开始绘制了 */
-              console.log('666');
-              
-              if (event.state === "complete") {
-                /* 双击完成了 */
-                //展开进度条以及飞行速度调节内容
-                _self.option = true;
-                
-                const geometryItems =
-                  _self.graphicsLayer.graphics.items[0].geometry.paths[0];
-
-                console.log(
-                  "geometrItem",
-                  _self.graphicsLayer.graphics.items[0].geometry
-                );
-                for (let i = 0; i < geometryItems.length; i++) {
-                  
-                  const endItem = geometryItems[i]
-                 
-                  _self.point.x = endItem[0];
-                  _self.point.y = endItem[1];
-                  // console.log(_self.point);
-                  //获得高程数据并加入到数组种
-                  /* _self.map.ground
-                      .queryElevation(_self.point, { returnSampleInfo: true })
-                      .then(function (result) {
-                        const z = result.geometry.z;
-                        endItem[2] = z;
-                        
-                      }); */
-                    /* 将xy坐标转为地理坐标，这样才能得到paths去加密 */
-                  let tpoi=webMercatorUtils.xyToLngLat(endItem[0],endItem[1]) 
-                  if(i==0||i==1)
-                  {
-                    _self.initPartPolylinePaths.push(tpoi)
-                    
-                  }
-                  
-                  _self.paths.push(tpoi);
-                }
-                
-                skeCreate.remove(); //断开事件侦听器的连接
-                _self.customRoute();
-                _self.densifyLine();
-              }
-              if (event.state === "cancel") {
-                _self.option = false; //关闭内容
-                skeCreate.remove(); //断开事件侦听器的连接
-              }
-            }
-          );
-
-          // 图形备份以还原已取消的更新过程
-          /* let updatebackupgraphic;
-
-const skeUp = _self.sketchViewModel.on("update", function (event) {
-  if (event.state === "start") {
-    updatebackupgraphic = event.graphics[0].clone();
-    _self.paths = [];
-  }
-  if (event.state === "complete") {
-    if (event.aborted) {
-      _self.graphicsLayer.removeAll();
-      // 在开始更新过程之前还原到图形
-      _self.graphicsLayer.remove(event.graphics[0]);
-      _self.graphicsLayer.add(updatebackupgraphic);
-    }
-    //展开内容
-    _self.option = true;
-    // console.log(_self.graphicsLayer.graphics.items);
-    // console.log(_self.graphicsLayer.graphics.items[0].geometry.paths[0]);
-    //获得绘制的折点，并转为经纬度坐标，最后是经纬度坐标的数组[[],[]]
-    const geometryItems =
-      _self.graphicsLayer.graphics.items[0].geometry.paths[0];
-
-    for (let i = 0; i < geometryItems.length; i++) {
-      const mercator = geometryItems[i];
-      const endItem = _self.mercatorToLoca(mercator);
-      _self.point.x = endItem[0];
-      _self.point.y = endItem[1];
-      // console.log(_self.point);
-      //获得高程数据并加入到数组种
-      _self.map.ground
-        .queryElevation(_self.point, { returnSampleInfo: true })
-        .then(function (result) {
-          const z = result.geometry.z;
-          endItem[2] = z;
-        });
-      _self.paths.push(endItem);
-    }
-    // console.log(_self.paths);
-    skeUp.remove(); //断开事件侦听器的连接
-  }
-}); */
-        }
-      );
-    },
-    /* 线密化完后，移动到此处 */
-    // moveToCustom 方法优化，确保 goTo 完成后再执行后续逻辑
-  moveToCustom(polylineExtent){
-    if (this.whichRoute === 3) {
-      console.log('marme1',this.mapConfig.sceneView.camera);
-      const first = this.pathPointGraphicList[0].geometry;
-      const second = this.pathPointGraphicList[1].geometry;
-      const heading = this.calcHeading(first, second);
-      /* 直接return goTo才行，不然无法打断正在执行的goTo
-        这样就是直接返回goTo，等goTo执行完才做后面的
-      */
-      return this.mapConfig.sceneView.goTo({
-        target: polylineExtent,
-        tilt: this.cameraTilt,
-        heading
-      }).then(() => {
-        return 'ok'; // 确保返回 Promise
-      }).catch((error) => {
-        console.error('Error in goTo:', error);
-        return Promise.reject(error);
-      });
-    }
-  }
-,
-    lerpAngle(currentAngle, targetAngle, fraction) {
-      let diff = targetAngle - currentAngle;
-      if (diff < -180) diff += 360;
-      if (diff > 180) diff -= 360;
-      return currentAngle + diff * fraction;
-    },
-    // 计算两点间的方向角，
-    calcHeading(pointA, pointB) {
-      let x1=pointA.longitude
-      let x2=pointB.longitude
-      let y1=pointA.latitude
-      let y2=pointB.latitude
-      let y = Math.sin(x2 - x1) * Math.cos(y2);
-      let x = Math.cos(y1) * Math.sin(y2) -
-              Math.sin(y1) * Math.cos(y2) * Math.cos(x2 - x1);
-      let bearing = Math.atan2(y, x) * (180 / Math.PI);
-      bearing = (bearing + 360) % 360;  // 规范化到0-360度
-      return bearing;
-/*    
-      atan2不行，因为atan2是以原点（0，0）为原点
-      而偏北角以北方为原点，camera的heading也是如此
-      所以要计算偏北角
-    // detaily,detailx(y是lat，x是long)
-      const angleRadians = Math.atan2(pointB.y - pointA.y, pointB.x - pointA.x);
-      const angleDegrees = angleRadians * (180 / Math.PI);
-      // 不进行标准化，直接返回原始角度，正左转，负右转
-      // console.log('angleDer两点的方向',angleDegrees); 
-      return angleDegrees; */
-    },
-
-    /* //沿着偏北角的方向向后退
-    calcReturn(lon, lat, bearing) {
-      if (bearing < 90 || bearing >= 0) {
-        lon = lon - 0.00214583333 * Math.cos((bearing * Math.pI) / 180.0);
-        lat = lat - 0.00163888889 * Math.sin((bearing * Math.pI) / 180.0);
-      } else if (bearing >= 90 || bearing < 180) {
-        lon =
-          lon + 0.00214583333 * Math.cos(((180.0 - bearing) * Math.pI) / 180.0);
-        lat =
-          lat - 0.00163888889 * Math.sin(((180.0 - bearing) * Math.pI) / 180.0);
-      } else if (bearing >= 180 || bearing < 270) {
-        lon =
-          lon + 0.00214583333 * Math.cos(((270.0 - bearing) * Math.pI) / 180.0);
-        lat =
-          lat + 0.00163888889 * Math.sin(((270.0 - bearing) * Math.pI) / 180.0);
-      } else if (bearing >= 270) {
-        lon =
-          lon - 0.00214583333 * Math.cos(((360.0 - bearing) * Math.pI) / 180.0);
-        lat =
-          lat + 0.00163888889 * Math.sin(((360.0 - bearing) * Math.pI) / 180.0);
-      }
-      return lon, lat;
-    }, */
-
-    /*  // fly2计算俯仰角， 90度时平行于水平面，0度时自上向下垂直俯视， 180度时自下向上仰视
-    calcTilt2(lon1, lat1, alt1, lon2, lat2, alt2) {
-      let distance = this.calcDistance(lon1, lat1, lon2, lat2);
-      let angle = (Math.atan2(alt2 - alt1, distance) * 180.0) / Math.PI;
-      let tilt = angle + 60; // 初版77
-      return tilt;
-    },
-    // 计算俯仰角， 90度时平行于水平面，0度时自上向下垂直俯视， 180度时自下向上仰视
-    calcTilt(lon1, lat1, alt1, lon2, lat2, alt2) {
-      let distance = this.calcDistance(lon1, lat1, lon2, lat2);
-      let angle = (Math.atan2(alt2 - alt1, distance) * 180.0) / Math.PI;
-      let tilt = angle - 44;
-      return tilt;
-    }, */
-
-    //获得新的路径点
-    //获得飞行速度
-    getSpeed(speed) {
-      if (speed == 1) {
-        return 1;
-      } else if (speed == 2) {
-        return 2;
-      } else if (speed == 3) {
-        return 3;
-      } else if (speed == 4) {
-        return 4;
-      } else if (speed == 5) {
-        return 5;
-      }
-    },
-    //获得飞行路线
-    getPaths(value) {
-      if (value == 1) {
-        return this.paths3;
-      } else if (value == 2) {
-        return this.Paths4;
-      }
-    },
-
-    // 创建图形
-    createGeometry(x, y) {
-      this.graphicsLayer.removeAll();
-      let point = {
-        type: "point",
-        x: x,
-        y: y,
-      };
-      //飞行点
-      this.pointGraphic = {
-        geometry: point,
-        symbol: {
-          type: "simple-marker",
-          color: "blue",
-          size: 12,
-          outline: {
-            width: 1,
-            color: "white",
-          },
-        },
-      };
-      this.graphicsLayer.add(this.pointGraphic);
-    },
-
-    //添加飞行路线图层
-    changeRoute(value) {
-      if (this.map.layers.items.length > 2) {
-        this.map.remove(this.map.layers.items[2]);
-      }
-      if (value == 1) {
-        this.map.add(this.route1);
-      } else if (value == 2) {
-        this.map.add(this.route2);
-      }
-    },
-
-    //清除按钮
-    clean(){
-      this.schedule = 0;
-      this.graphicsLayer.removeAll();
-      this.pointGraphicLayer.removeAll()
-      this.pathPointGraphicList = [];
-      this.flyingGraphicsLayer.removeAll()
       
-    },
-
-    //回到初始视图
-    home() {
-      if(this.partgeometryExtent)
-        this.moveToCustom(this.partgeometryExtent)
-      else
-      {
-        this.homeCam = {
-        position: [113.75665604199996, 25.04682589249998, 180],
-        heading: 255,
-        tilt: 80,
-      };
-      this.mapConfig.sceneView.goTo(this.homeCam, {
-        speedFactor: 0.3,
+      // 相机移动
+      mapConfig.sceneView.goTo(cam.value, {
+        speedFactor: 0,
         easing: "linear",
       });
+    };
+
+    // 重新飞行
+    const fly_test = (value) => {
+      let routeGraphic;
+      
+      if (f1_show.value === true) {
+        // 通过 route 判断使用哪个路线图形
+        if (route.value === 1) {
+          routeGraphic = route1DensifiedPolyline.value;
+        } else {
+          routeGraphic = route2DensifiedPolyline.value;
+        }
+      } else {
+        // 自定义飞行部分
+        if (pathPointGraphicList.value.length === 0) {
+          // 生成线上的点
+          generatePointsAlongLine();
+        }
+        routeGraphic = {
+          paths: [paths.value],
+        };
       }
-    },
-  },
-  //  mounted 是实例创建期间的最后一个生命周期, 当执行完mounted 就表示,实例已经被完全创建好了
-  mounted() {
-    NProgress.start();
-    this._createMapView();
-  },
-  beforeDestroy() {
-    // 组件销毁前的逻辑
-    NProgress.remove();
+      
+      // 判断是否是重新飞行或者新飞行
+      if (refly.value === true || nowTime.value === 0) {
+        nowTime.value = 0;
+        schedule.value = 0;
+      }
+      
+      // 设置正在飞行标志
+      isFlying.value = true;
+      refly.value = false;
+      
+      // 启动递归飞行
+      window.cancelAnimationFrame(rqfId.value);
+      rqfId.value = window.requestAnimationFrame(flyFrame);
+    };
+
+    // 飞行帧函数
+    const flyFrame = () => {
+      // 如果不再飞行，则取消动画
+      if (!isFlying.value) {
+        window.cancelAnimationFrame(rqfId.value);
+        return;
+      }
+      
+      let routeGraphic;
+      if (f1_show.value === true) {
+        // 通过 route 判断使用哪个路线图形
+        if (route.value === 1) {
+          routeGraphic = route1DensifiedPolyline.value;
+        } else {
+          routeGraphic = route2DensifiedPolyline.value;
+        }
+      } else {
+        routeGraphic = {
+          paths: [paths.value],
+        };
+      }
+      
+      // 获取路径长度
+      const len = routeGraphic.paths[0].length;
+      
+      // 更新当前时间
+      nowTime.value += 1;
+      
+      // 计算当前索引
+      const index = Math.floor(nowTime.value / 60 * getSpeed(speed.value));
+      
+      // 更新进度条
+      schedule.value = index;
+      
+      // 检查是否飞行结束
+      if (index >= len) {
+        isFlying.value = false;
+        window.cancelAnimationFrame(rqfId.value);
+        return;
+      }
+      
+      // 获取当前点和航向
+      const currentPoint = routeGraphic.paths[0][index];
+      
+      if (index + 1 < len) {
+        const nextPoint = routeGraphic.paths[0][index + 1];
+        nowHeading.value = bearing(
+          currentPoint[0],
+          currentPoint[1],
+          nextPoint[0],
+          nextPoint[1]
+        );
+      }
+      
+      // 处理视角旋转
+      if (changeHeadingLeft.value) {
+        nowHeading.value -= 15;
+        changeHeadingLeft.value = false;
+      }
+      
+      if (changeHeadingRight.value) {
+        nowHeading.value += 15;
+        changeHeadingRight.value = false;
+      }
+      
+      // 处理俯仰角变化
+      if (changeTiltUp.value) {
+        nowTilt.value -= 15;
+        if (nowTilt.value < 0) nowTilt.value = 0;
+        changeTiltUp.value = false;
+      }
+      
+      if (changeTiltDown.value) {
+        nowTilt.value += 15;
+        if (nowTilt.value > 90) nowTilt.value = 90;
+        changeTiltDown.value = false;
+      }
+      
+      // 处理高度变化
+      if (changeZHigher.value) {
+        nowZ.value += 50;
+        changeZHigher.value = false;
+      }
+      
+      if (changeZLower.value) {
+        nowZ.value -= 50;
+        if (nowZ.value < 10) nowZ.value = 10;
+        changeZLower.value = false;
+      }
+      
+      // 设置相机位置和角度
+      cam.value = {
+        position: [currentPoint[0], currentPoint[1], currentPoint[2] + nowZ.value],
+        heading: nowHeading.value,
+        tilt: nowTilt.value,
+      };
+      
+      // 移动相机
+      mapConfig.sceneView.goTo(cam.value, {
+        speedFactor: 0,
+        easing: "linear",
+      });
+      
+      // 继续下一帧
+      rqfId.value = window.requestAnimationFrame(flyFrame);
+    };
+
+    // 获取速度
+    const getSpeed = (speed) => {
+      let num;
+      switch (speed) {
+        case "0":
+          num = 0.5;
+          break;
+        case "1":
+          num = 0.6;
+          break;
+        case "2":
+          num = 0.8;
+          break;
+        case "3":
+          num = 1;
+          break;
+        case "4":
+          num = 2;
+          break;
+        case "5":
+          num = 3;
+          break;
+        default:
+          num = 1;
+      }
+      return num;
+    };
+
+    // 计算航向角
+    const bearing = (startLng, startLat, destLng, destLat) => {
+      startLat = (startLat * Math.PI) / 180;
+      startLng = (startLng * Math.PI) / 180;
+      destLat = (destLat * Math.PI) / 180;
+      destLng = (destLng * Math.PI) / 180;
+
+      let bearing =
+        (Math.atan2(
+          Math.sin(destLng - startLng) * Math.cos(destLat),
+          Math.cos(startLat) * Math.sin(destLat) -
+            Math.sin(startLat) *
+              Math.cos(destLat) *
+              Math.cos(destLng - startLng)
+        ) *
+          180) /
+        Math.PI;
+      
+      if (bearing < 0) {
+        bearing = 360 + bearing;
+      }
+      
+      return bearing;
+    };
+
+    // 生成线上的点
+    const generatePointsAlongLine = () => {
+      // 如果自定义路径上已经有点，则清除
+      if (pathPointGraphicList.value.length > 0) {
+        return;
+      }
+      
+      // 处理每个点
+      for (const point of paths.value) {
+        // 创建点样式
+        const pointSymbol = {
+          type: "simple-marker",
+          color: [226, 119, 40],
+          outline: {
+            color: [255, 255, 255],
+            width: 1
+          },
+          size: 5
+        };
+        
+        // 创建点几何
+        const pointGeometry = {
+          type: "point",
+          longitude: point[0],
+          latitude: point[1],
+          z: point[2]
+        };
+        
+        // 创建点图形
+        const pointGraphic = {
+          geometry: pointGeometry,
+          symbol: pointSymbol
+        };
+        
+        // 添加到图层和存储
+        pointGraphicLayer.value.add(pointGraphic);
+        pathPointGraphicList.value.push(pointGraphic);
+      }
+      
+      // 设置最大值
+      lengthMax.value = paths.value.length - 1;
+    };
+
+    // 路线切换
+    const change_view = (val, msg) => {
+      schedule.value = 0;
+      let routeGraphic;
+      
+      if (val === "1") {
+        if (msg === 'init') {
+          pointGraphicLayer.value.removeAll();
+          pointGraphicLayer.value.add(path3_graphic.value);
+        }
+        routeGraphic = route1DensifiedPolyline.value;
+      } else {
+        if (msg === 'init') {
+          pointGraphicLayer.value.removeAll();
+          pointGraphicLayer.value.add(path4_graphic.value);
+        }
+        routeGraphic = route2DensifiedPolyline.value;
+      }
+      
+      // 设置最大值
+      lengthMax.value = routeGraphic.paths[0].length - 1;
+    };
+
+    // 墨卡托投影坐标转经纬度
+    const mercatorToLoca = (mercator) => {
+      const x = mercator[0];
+      const y = mercator[1];
+      const lon = (x / 20037508.34) * 180;
+      const lat = (y / 20037508.34) * 180;
+      const lat2 = (180 / Math.PI) * (2 * Math.atan(Math.exp((lat * Math.PI) / 180)) - Math.PI / 2);
+      
+      return [lon, lat2, 0];
+    };
+
+    // 创建草图工具
+    const creatSke = () => {
+      // 调整初始视角
+      mapConfig.sceneView.camera.tilt = 0;
+      mapConfig.sceneView.zoom = 17;
+      
+      // 激活绘制工具
+      sketchViewModel.value.create("polyline");
+      
+      // 设置监听器，处理绘制完成和取消事件
+      skeCreate.value = sketchViewModel.value.on("create", (event) => {
+        if (event.state === "complete") {
+          // 显示进度条和速度设置
+          option.value = true;
+          
+          // 获取绘制的点坐标
+          const geometryItems = pointGraphicLayer.value.graphics.items[0].geometry.paths[0];
+          
+          // 清空路径数组
+          paths.value = [];
+          
+          // 转换每个点
+          for (let i = 0; i < geometryItems.length; i++) {
+            const mercator = geometryItems[i];
+            const endItem = mercatorToLoca(mercator);
+            point.value.x = endItem[0];
+            point.value.y = endItem[1];
+            
+            // 获取高程并添加到点中
+            map.value.ground
+              .queryElevation(point.value, { returnSampleInfo: true })
+              .then((result) => {
+                const z = result.geometry.z;
+                endItem[2] = z;
+              });
+            
+            // 添加到路径数组
+            paths.value.push(endItem);
+          }
+          
+          // 移除监听器
+          skeCreate.value.remove();
+        }
+        
+        if (event.state === "cancel") {
+          // 关闭进度条和速度设置
+          option.value = false;
+          
+          // 移除监听器
+          skeCreate.value.remove();
+        }
+      });
+    };
+
+    // 清除图形和路径
+    const clean = () => {
+      option.value = false;
+      pointGraphicLayer.value.removeAll();
+      paths.value = [];
+      pathPointGraphicList.value = [];
+    };
+
+    // 返回初始视图
+    const home = () => {
+      mapConfig.sceneView.goTo({
+        position: {
+          x: 113.773052,
+          y: 25.046557,
+          z: 800,
+        },
+        tilt: 0,
+        heading: 0,
+      });
+    };
+
+    // 生命周期钩子
+    onMounted(() => {
+      _createMapView();
+    });
+
+    // 组件卸载时停止动画
+    onBeforeUnmount(() => {
+      isFlying.value = false;
+      if (rqfId.value) {
+        window.cancelAnimationFrame(rqfId.value);
+      }
+    });
+
+    // 返回方法和响应式状态
+    return {
+      path3_graphic,
+      path4_graphic,
+      whichRoute,
+      f1_show,
+      f2_show,
+      map,
+      mapConfig,
+      schedule,
+      lengthMax,
+      paths3,
+      paths4,
+      route1DensifiedPolyline,
+      route2DensifiedPolyline,
+      cam,
+      route,
+      speed,
+      tickLabels,
+      pointGraphicLayer,
+      pointGraphic,
+      polylineGraphic,
+      sketchViewModel,
+      option,
+      paths,
+      pathPointGraphicList,
+      isFlying,
+      changeHeadingLeft,
+      changeHeadingRight,
+      changeTiltUp,
+      changeTiltDown,
+      changeZHigher,
+      changeZLower,
+      refly,
+      skeTool,
+      point,
+      long,
+      lat,
+      skeCreate,
+      rqfId,
+      nowTime,
+      nowTilt,
+      nowHeading,
+      nowZ,
+      _createMapView,
+      densifyLine,
+      getSchedule,
+      fly_test,
+      flyFrame,
+      getSpeed,
+      bearing,
+      generatePointsAlongLine,
+      change_view,
+      mercatorToLoca,
+      creatSke,
+      clean,
+      home
+    };
   },
 };
 </script>

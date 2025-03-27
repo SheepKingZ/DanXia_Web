@@ -152,73 +152,85 @@
 <script>
 import { loadModules } from "esri-loader";
 import axios from "axios";
+import { ref, reactive, onMounted } from 'vue';
 
 export default {
   name: "Home",
-  data() {
-    return {
-      map: "",
-      mapConfig: {
-        container: "route3",
-        mapView: null,
+  setup() {
+    // 响应式状态
+    const map = ref("");
+    const mapConfig = reactive({
+      container: "route3",
+      mapView: null,
+    });
+    const graphics = ref("");
+    const highlighSelect = ref("");
+    const pointTitle = ref("");
+    const desserts = ref([]); //存储表格内容
+    const selectedItem = ref(0);
+    const items = ref([]); //存储点列表
+    const drawer = ref(true);
+    const mini = ref(false); //控制点列表是否伸出
+    const andrawer = ref(true);
+    const anmini = ref(true); //控制点详情是否伸出
+    const model = ref(null);
+    const pointItems = ref([]); //存储相应点的图片
+    const viewer1 = ref(false); //图片大图查看
+    const picModel = ref(0); //控制放大的图片显示的是第几张
+    const i = ref(0); //监控这是第几次开始点击图片查看大图
+    const srcvideo = ref(""); //视频地址
+    const viewer = ref(null);
+    const pointGraphic = ref("");
+    const pointGraphicLayer = ref(""); //闪烁点的graphicLayer图层
+    const horizontalLine = ref(false); //控制水平虚线是否可见
+    const verticalLine = ref(false); //控制垂直虚线是否可见
+    const pointIntroduce = ref(null); //点简介
+    
+    //控制视频的相关详情
+    const playerOptions = reactive({
+      // playbackRates: [0.7, 1.0, 1.5, 2.0], //播放速度
+      autoplay: false, // 如果true,浏览器准备好时开始回放。
+      muted: false, // 默认情况下将会消除任何音频。
+      loop: false, // 导致视频一结束就重新开始。
+      preload: "auto", // 建议浏览器在<video>加载元素后是否应该开始下载视频数据。auto浏览器选择最佳行为,立即开始加载视频（如果浏览器支持）
+      language: "zh-CN",
+      aspectRatio: "16:9", // 将播放器置于流畅模式，并在计算播放器的动态大小时使用该值。值应该代表一个比例 - 用冒号分隔的两个数字（例如"16:9"或"4:3"）
+      fluid: true, // 当true时，Video.js player将拥有流体大小。换句话说，它将按比例缩放以适应其容器。
+      sources: [], //存储视频url以及视频类型
+      hls: true,
+      poster: "", // 你的封面地址
+      width: document.documentElement.clientWidth, // 播放器宽度
+      notSupportedMessage: "此视频暂无法播放，请稍后再试", // 允许覆盖Video.js无法播放媒体源时显示的默认信息。
+      controlBar: {
+        timeDivider: false,
+        durationDisplay: true,
+        remainingTimeDisplay: false,
+        fullscreenToggle: true, // 全屏按钮
       },
-      graphics: "",
-      highlighSelect: "",
-      pointTitle: "",
-      desserts: [], //存储表格内容
-      selectedItem: 0,
-      items: [], //存储点列表
-      drawer: true,
-      mini: false, //控制点列表是否伸出
-      andrawer: true,
-      anmini: true, //控制点详情是否伸出
-      model: null,
-      pointItems: [], //存储相应点的图片
-      viewer1: false, //图片大图查看
-      picModel: 0, //控制放大的图片显示的是第几张
-      i: 0, //监控这是第几次开始点击图片查看大图
-      srcvideo: "", //视频地址
-      //控制视频的相关详情
-      playerOptions: {
-        // playbackRates: [0.7, 1.0, 1.5, 2.0], //播放速度
-        autoplay: false, // 如果true,浏览器准备好时开始回放。
-        muted: false, // 默认情况下将会消除任何音频。
-        loop: false, // 导致视频一结束就重新开始。
-        preload: "auto", // 建议浏览器在<video>加载元素后是否应该开始下载视频数据。auto浏览器选择最佳行为,立即开始加载视频（如果浏览器支持）
-        language: "zh-CN",
-        aspectRatio: "16:9", // 将播放器置于流畅模式，并在计算播放器的动态大小时使用该值。值应该代表一个比例 - 用冒号分隔的两个数字（例如"16:9"或"4:3"）
-        fluid: true, // 当true时，Video.js player将拥有流体大小。换句话说，它将按比例缩放以适应其容器。
-        sources: [], //存储视频url以及视频类型
-        hls: true,
-        poster: "", // 你的封面地址
-        width: document.documentElement.clientWidth, // 播放器宽度
-        notSupportedMessage: "此视频暂无法播放，请稍后再试", // 允许覆盖Video.js无法播放媒体源时显示的默认信息。
-        controlBar: {
-          timeDivider: false,
-          durationDisplay: true,
-          remainingTimeDisplay: false,
-          fullscreenToggle: true, // 全屏按钮
-        },
-      },
-      //控制点闪烁的graphic
-      pointGraphic: "",
-      pointGraphicLayer: "", //闪烁点的graphicLayer图层
-      horizontalLine: false, //控制水平虚线是否可见
-      verticalLine: false, //控制垂直虚线是否可见
-      pointIntroduce: null, //点简介
-    };
-  },
-
-  methods: {
+    });
+    
     //创建地图
-    _createMapView: function () {
-      const _self = this; //定义一个_self防止后续操作中this丢失
+    const _createMapView = function () {
+      const _self = { 
+        map, 
+        mapConfig, 
+        playerOptions, 
+        pointIntroduce, 
+        pointItems, 
+        srcvideo,
+        pointGraphic,
+        pointGraphicLayer,
+        horizontalLine,
+        verticalLine,
+        desserts,
+        pointTitle,
+        items
+      }; //定义一个_self引用响应式对象
+      
       const option = {
         //定义一个包含有JS API中js开发包和css样式文件的对象
         url: "https://js.arcgis.com/4.19/init.js",
         css: "https://js.arcgis.com/4.19/esri/themes/light/main.css",
-        // url: "http://localhost:9999/4.18/init.js",
-        // css: "http://localhost:9999/4.18/esri/themes/light/main.css",
       };
       //通过loadModules来做衔接
       loadModules(
@@ -386,7 +398,7 @@ export default {
             const basemap = new Basemap({
               baseLayers: [webTileLayer],
             });
-            _self.map = new Map({
+            _self.map.value = new Map({
               //实例化地图
               basemap,
               ground: "world-elevation",
@@ -394,158 +406,127 @@ export default {
 
             _self.mapConfig.mapView = new MapView({
               //实例化地图视图
-              map: _self.map,
+              map: _self.map.value,
               zoom: 14,
-              center: [113.754555, 25.026711],
+              center: [113.762911, 25.024307],
               container: _self.mapConfig.container,
               constraints: {
-                maxZoom: 17,
+                minZoom: 13,
               },
             });
 
-            //创建点注记样式
-            const labelClass = {
-              symbol: {
-                type: "text",
-                color: "black",
-                font: {
-                  family: "Playfair Display",
-                  size: 12,
-                  weight: "bold",
-                },
-              },
-              labelPlacement: "above-center",
-              labelExpressionInfo: {
-                expression: "$feature.name",
-              },
-            };
-
-            //初始化点闪烁的graphic以及相应的图层
-            _self.pointGraphic = new Graphic();
-            _self.pointGraphicLayer = new GraphicsLayer();
-
-            var featureLayer = new FeatureLayer({
-              url: "https://danxiagis.top:6443/arcgis/rest/services/DanXia/practicePoints/FeatureServer",
+            const annotationLayerChuanyi = new FeatureLayer({
+              //实例化要素图层
+              url: "https://danxiagis.top:6443/arcgis/rest/services/VirtualDanxia/route3/MapServer/0",
               outFields: ["*"],
-              definitionExpression: "routeID=3",
-              labelingInfo: [labelClass],
-              renderer: {
-                type: "simple",
-                symbol: {
-                  type: "simple-marker",
-                  size: 9,
-                  color: "#a900b7",
-                  outline: {
-                    width: 1,
-                    color: "white",
-                  },
-                },
-              },
+              title: "阴元石-祥龙湖路线",
+              popupEnabled: false,
             });
-            var RoutesfeatureLayer = new FeatureLayer({
-              url: "https://danxiagis.top:6443/arcgis/rest/services/DanXia/practiceRoutes/FeatureServer/2",
-              renderer: {
-                type: "simple",
-                symbol: {
-                  type: "simple-line",
-                  width: "5px",
-                  color: "#3073c0",
-                },
-              },
+
+            _self.map.value.featureLayer = annotationLayerChuanyi;
+
+            //添加要素图层
+            _self.map.value.add(annotationLayerChuanyi);
+
+            //添加实习点
+            axios({
+              method: "get",
+              url: "https://danxiagis.top:3005/getPointName/route3",
+            }).then((response) => {
+              const pointNameList = response.data;
+              for (let i = 0; i < pointNameList.length; i++) {
+                _self.items.value.push(pointNameList[i].name);
+              }
             });
-            _self.map.add(RoutesfeatureLayer);
-            _self.map.add(featureLayer);
-            RoutesfeatureLayer.when(function () {
-              _self.mapConfig.mapView.extent = RoutesfeatureLayer.fullExtent;
-              // console.log(RoutesfeatureLayer)
-            });
-            _self.mapConfig.mapView
-              .whenLayerView(featureLayer)
-              .then(function (layerView) {
-                let pointWatch = layerView.watch("updating", function (value) {
-                  _self.items = [];
-                  if (!value) {
-                    // wait for the layer view to finish updating
-                    // query all the features available for drawing.
-                    layerView
-                      .queryFeatures({
-                        geometry: _self.mapConfig.mapView.extent,
-                        returnGeometry: true,
-                        orderByFields: ["name"],
-                      })
-                      .then(function (results) {
-                        _self.graphics = results.features;
-                        _self.graphics.forEach(function (result) {
-                          const attributes = result.attributes;
-                          const name = attributes.name;
-                          _self.items.push(name);
-                          // console.log(attributes.routeID);
-                        });
-                        // console.log(_self.items);
-                      })
-                      .catch(function (error) {
-                        console.error("query failed: ", error);
-                      });
-                  }
-                  pointWatch.remove();
-                });
-                _self.mapConfig.mapView.on("pointer-down", _self.eventHandler);
-              });
+
+            //graphic用于点的闪烁
+            //实例化一个GraphicsLayer
+            _self.pointGraphic.value = new Graphic();
+            _self.pointGraphicLayer.value = new GraphicsLayer();
+            _self.mapConfig.mapView.popup.defaultPopupTemplateEnabled = true;
+
+            //获取地图点击点的详细信息
+            _self.mapConfig.mapView.on("click", eventHandler);
           }
         )
         .catch((err) => {
-          _self.$message("地图创建失败，" + err);
+          console.log(err); //错误信息
         });
-    },
-    // 点击点列表的事件
-    onListClickHandler: function (event) {
-      const _self = this;
+    };
+    
+    //点闪烁
+    const flicker = function (graphic) {
+      let temp = 0;
+      let handler = setInterval(function () {
+        if (temp === 6) {
+          if (handler) {
+            if (!graphic.visible)
+              //graphic.show();
+              graphic.visible = true;
+            clearInterval(handler);
+            handler = null;
+          }
+          return;
+        }
+        if (graphic.visible) graphic.visible = false;
+        else graphic.visible = true;
+        temp++;
+      }, 400);
+    };
+    
+    //图片放大
+    const clickLocation = function (Item) {
+      i.value = i.value + 1;
+      if (i.value > 1) {
+        inited(viewer.value);
+      }
+      viewer1.value = true;
+      picModel.value = Item;
+      viewer.value.view(picModel.value);
+    };
+    
+    //初始化预览组件
+    const inited = function (viewerInstance) {
+      viewer.value = viewerInstance;
+    };
+    
+    // 用于列表点击的处理
+    const onListClickHandler = (event) => {
       const target = event.target;
+      pointIntroduce.value = null;
       //清空图片列表
-      _self.pointItems = [];
-      //清空视频容器
-      _self.srcvideo = "";
-      _self.pointIntroduce = null;
-      // console.log(target.innerHTML);
-      // console.log(_self.map.layers.items[0])
+      pointItems.value = [];
+      //视频容器不可见
+      srcvideo.value = "";
+      
       //展开点详情表
-      _self.anmini = false;
+      anmini.value = false;
       //获取点要素图层
-      const featureLayer = _self.map.layers.items[1];
+      const featureLayer = map.value.featureLayer;
       //创建查询
       const query = featureLayer.createQuery();
       query.where = "name='" + target.innerHTML + "'";
       //获得查询结果及点要素图层的view
-      _self.mapConfig.mapView
+      mapConfig.mapView
         .whenLayerView(featureLayer)
         .then(function (layerView) {
           featureLayer.queryFeatures(query).then(function (response) {
-            // console.log(response);
-            if (_self.highlighSelect) {
-              _self.highlighSelect.remove();
-              // _self.mapConfig.mapView.graphics.removeAll()
-              _self.pointGraphicLayer.graphics.remove(_self.pointGraphic);
+            if (highlighSelect.value) {
+              highlighSelect.value.remove();
+              pointGraphicLayer.value.graphics.remove(pointGraphic.value);
             }
-            // if (_self.mapConfig.mapView.graphics.length > 1) {
-            //   const Arrylength = _self.mapConfig.mapView.graphics.length-1;
-
-            //   console.log(Arrylength);
-            //   _self.mapConfig.mapView.graphics.items.splice(0, Arrylength);
-
-            // }
-
             //高亮显示，视图移动到选中的点
             const feature = response.features[0];
-            _self.highlighSelect = layerView.highlight(
+            highlighSelect.value = layerView.highlight(
               feature.attributes["objectid"]
             );
-            _self.mapConfig.mapView.goTo({
+            mapConfig.mapView.goTo({
               target: feature.geometry,
             });
             //将获得的结果填充到表格中
-            _self.pointTitle =
-              "阴元石-翔龙湖景区路线——" + feature.attributes.name;
-            _self.desserts = [];
+            pointTitle.value =
+              "阴元石-祥龙湖路线——" + feature.attributes.name;
+            desserts.value = [];
             const rock = { name: "岩石", calories: feature.attributes.rock };
             const tectonic = {
               name: "地质构造",
@@ -561,7 +542,7 @@ export default {
               calories: feature.attributes.vegetation,
             };
             const slope = { name: "坡度", calories: feature.attributes.slope };
-            _self.desserts.push(
+            desserts.value.push(
               rock,
               tectonic,
               landscape,
@@ -580,23 +561,18 @@ export default {
                 width: 10,
               },
             };
-            _self.pointGraphic.geometry = feature.geometry;
-            _self.pointGraphic.symbol = pointSymbol;
-            // _self.mapConfig.mapView.graphics.add(_self.pointGraphic);
-            _self.pointGraphicLayer.graphics.add(_self.pointGraphic);
-            _self.map.add(_self.pointGraphicLayer);
-            // console.log(111111111);
-            // console.log(_self.pointGraphicLayer);
-            _self.flicker(_self.pointGraphic);
-            // console.log(_self.pointGraphic);
-            // console.log(_self.mapConfig.mapView.graphics);
-            _self.horizontalLine = "true";
-            _self.verticalLine = "true";
+            pointGraphic.value.geometry = feature.geometry;
+            pointGraphic.value.symbol = pointSymbol;
+            pointGraphicLayer.value.graphics.add(pointGraphic.value);
+            map.value.add(pointGraphicLayer.value);
+            flicker(pointGraphic.value);
+            horizontalLine.value = "true";
+            verticalLine.value = "true";
             //控制十字线出现
             setTimeout(() => {
-              _self.horizontalLine = false;
-              _self.verticalLine = false;
-              _self.map.remove(_self.pointGraphicLayer);
+              horizontalLine.value = false;
+              verticalLine.value = false;
+              map.value.remove(pointGraphicLayer.value);
             }, 2400);
 
             //发送请求获取图片url和视频
@@ -604,133 +580,92 @@ export default {
               method: "post",
               url: "https://danxiagis.top:3005/pointData/get",
               data: `pointId=${feature.attributes.objectid}`,
-              // data: `pointId=1`,
             }).then((response) => {
-              _self.pointIntroduce = response.data.introduce;
-              // console.log(response);
+              pointIntroduce.value = response.data.introduce;
               //将图片添加到图片列表中
               const imgUrls = response.data.Img;
-              // console.log(imgUrls);
               for (var i = 0; i < imgUrls.length; i++) {
                 const imgUrl = { src: imgUrls[i] };
-                // console.log(imgUrl)
-                _self.pointItems.push(imgUrl);
+                pointItems.value.push(imgUrl);
               }
-              // console.log(_self.pointItems)
               //添加视频封面
-              _self.playerOptions.poster =
+              playerOptions.poster =
                 "https://danxiagis.top:3007/image/banner1.jpg";
               //添加视频
               if (response.data.Video.length != 0) {
                 const video = response.data.Video;
-                // _self.playerOptions.sources[0].src = video;
-                // _self.$refs.videoPlayer.sources[0].src=video
-                _self.$set(_self.playerOptions.sources, 0, {
+                playerOptions.sources[0] = {
                   type: "video/mp4",
                   src: video[0],
-                });
-                // _self.player.muted(false)
-                _self.srcvideo = video;
-                // console.log(_self.playerOptions);
+                };
+                srcvideo.value = video;
               }
             });
           });
         });
-    },
-    //点闪烁
-    flicker: function (graphic) {
-      let temp = 0;
-      let handler = setInterval(function () {
-        if (temp === 6) {
-          if (handler) {
-            if (!graphic.visible)
-              //graphic.show();
-              graphic.visible = true;
-            clearInterval(handler);
-            handler = null;
-          }
-          return;
-        }
-        if (graphic.visible) graphic.visible = false;
-        else graphic.visible = true;
-        temp++;
-      }, 400);
-    },
-    //图片放大
-    clickLocation: function (Item) {
-      this.i = this.i + 1;
-      if (this.i > 1) {
-        this.inited(this.$viewer);
-      }
-      this.viewer1 = true;
-      this.picModel = Item;
-      this.$viewer.view(this.picModel);
-    },
-    //初始化预览组件
-    inited: function (viewer) {
-      const _self = this;
-      _self.$viewer = viewer;
-      // console.log(viewer);
-      // _self.$viewer.view(_self.picModel);
-    },
+    };
+    
+    // 视频播放事件
+    const onPlayerPlay = ($event) => {
+      // 视频播放事件处理
+    };
+    
+    // 视频暂停事件
+    const onPlayerPause = ($event) => {
+      // 视频暂停事件处理
+    };
 
     //点击地图上的点实现和点击列表相同的效果
-    eventHandler: function (event) {
-      const _self = this;
+    const eventHandler = function (event) {
       //清空图片列表
-      _self.pointItems = [];
+      pointItems.value = [];
       //清空视频容器
-      _self.srcvideo = "";
-      _self.pointIntroduce = null;
+      srcvideo.value = "";
+      pointIntroduce.value = null;
       const opts = {
-        include: _self.map.featureLayer,
+        include: map.value.featureLayer,
       };
-      this.mapConfig.mapView.hitTest(event, opts).then(function (response) {
-        // console.log(333333333333);
-        // console.log(response);
-        const pointGraphic = response.results[0].graphic;
-        if (response.results[0].graphic.geometry.type === "point") {
-          // console.log("true");
+      mapConfig.mapView.hitTest(event, opts).then(function (response) {
+        const pointGraphicValue = response.results[0]?.graphic;
+        if (pointGraphicValue && pointGraphicValue.geometry.type === "point") {
           //展开点详情弹窗
-          _self.anmini = false;
-          if (_self.highlighSelect) {
-            _self.highlighSelect.remove();
-            _self.pointGraphicLayer.graphics.remove(_self.pointGraphic);
+          anmini.value = false;
+          if (highlighSelect.value) {
+            highlighSelect.value.remove();
+            pointGraphicLayer.value.graphics.remove(pointGraphic.value);
           }
 
           //高亮显示，视图移动到选中的点
-          console.log(_self.mapConfig.mapView);
-          // const layerView = _self.map.featureLayer.createLayerView();
-          _self.highlighSelect =
-            _self.mapConfig.mapView.allLayerViews.items[2].highlight(
-              pointGraphic.attributes["objectid"]
+          highlighSelect.value =
+            mapConfig.mapView.allLayerViews.items[2].highlight(
+              pointGraphicValue.attributes["objectid"]
             );
-          _self.mapConfig.mapView.goTo({
-            target: pointGraphic.geometry,
+          mapConfig.mapView.goTo({
+            target: pointGraphicValue.geometry,
           });
           //将获得的结果填充到表格中
-          _self.pointTitle =
-            "阴元石-翔龙湖景区路线——" + pointGraphic.attributes.name;
-          _self.desserts = [];
-          const rock = { name: "岩石", calories: pointGraphic.attributes.rock };
+          pointTitle.value =
+            "阴元石-祥龙湖路线——" + pointGraphicValue.attributes.name;
+          desserts.value = [];
+          const rock = { name: "岩石", calories: pointGraphicValue.attributes.rock };
           const tectonic = {
             name: "地质构造",
-            calories: pointGraphic.attributes.tectonic,
+            calories: pointGraphicValue.attributes.tectonic,
           };
           const landscape = {
             name: "地貌",
-            calories: pointGraphic.attributes.landscape,
+            calories: pointGraphicValue.attributes.landscape,
           };
-          const soil = { name: "土壤", calories: pointGraphic.attributes.soil };
+          const soil = { name: "土壤", calories: pointGraphicValue.attributes.soil };
           const vegetation = {
             name: "植被",
-            calories: pointGraphic.attributes.vegetation,
+            calories: pointGraphicValue.attributes.vegetation,
           };
           const slope = {
             name: "坡度",
-            calories: pointGraphic.attributes.slope,
+            calories: pointGraphicValue.attributes.slope,
           };
-          _self.desserts.push(
+          desserts.value.push(
             rock,
             tectonic,
             landscape,
@@ -749,73 +684,92 @@ export default {
               width: 10,
             },
           };
-          _self.pointGraphic.geometry = pointGraphic.geometry;
-          _self.pointGraphic.symbol = pointSymbol;
-          // _self.mapConfig.mapView.graphics.add(_self.pointGraphic);
-          _self.pointGraphicLayer.graphics.add(_self.pointGraphic);
-          _self.map.add(_self.pointGraphicLayer);
-          // console.log(111111111);
-          // console.log(_self.pointGraphicLayer);
-          _self.flicker(_self.pointGraphic);
-          // console.log(_self.pointGraphic);
-          // console.log(_self.mapConfig.mapView.graphics);
-          _self.horizontalLine = "true";
-          _self.verticalLine = "true";
+          pointGraphic.value.geometry = pointGraphicValue.geometry;
+          pointGraphic.value.symbol = pointSymbol;
+          pointGraphicLayer.value.graphics.add(pointGraphic.value);
+          map.value.add(pointGraphicLayer.value);
+          flicker(pointGraphic.value);
+          horizontalLine.value = "true";
+          verticalLine.value = "true";
           //控制十字线出现
           setTimeout(() => {
-            _self.horizontalLine = false;
-            _self.verticalLine = false;
-            _self.map.remove(_self.pointGraphicLayer);
+            horizontalLine.value = false;
+            verticalLine.value = false;
+            map.value.remove(pointGraphicLayer.value);
           }, 2400);
 
           //发送请求获取图片url和视频
           axios({
             method: "post",
             url: "https://danxiagis.top:3005/pointData/get",
-            data: `pointId=${pointGraphic.attributes["objectid"]}`,
-            // data: `pointId=1`,
+            data: `pointId=${pointGraphicValue.attributes["objectid"]}`,
           }).then((response) => {
-            _self.pointIntroduce = response.data.introduce;
-            // console.log(response);
+            pointIntroduce.value = response.data.introduce;
             //将图片添加到图片列表中
             const imgUrls = response.data.Img;
-            // console.log(imgUrls);
             for (var i = 0; i < imgUrls.length; i++) {
               const imgUrl = { src: imgUrls[i] };
-              // console.log(imgUrl)
-              _self.pointItems.push(imgUrl);
+              pointItems.value.push(imgUrl);
             }
-            // console.log(_self.pointItems)
 
             //添加视频
             if (response.data.Video.length != 0) {
               //添加视频封面
-              _self.playerOptions.poster =
+              playerOptions.poster =
                 "https://danxiagis.top:3007/image/banner1.jpg";
               const video = response.data.Video;
-              // _self.playerOptions.sources[0].src = video;
-              // _self.$refs.videoPlayer.sources[0].src=video
-              _self.$set(_self.playerOptions.sources, 0, {
+              playerOptions.sources[0] = {
                 type: "video/mp4",
                 src: video[0],
-              });
-              // _self.player.muted(false)
-              _self.srcvideo = video;
-              // console.log(_self.playerOptions);
+              };
+              srcvideo.value = video;
             }
           });
         }
       });
-    },
-  },
-  mounted: function () {
-    this._createMapView();
-  },
-  //   computed: {
-  //   player() {
-  //     return this.$refs.videoPlayer.player;
-  //   },
-  // },
+    };
+    
+    // 组件挂载时创建地图
+    onMounted(() => {
+      _createMapView();
+    });
+    
+    // 返回响应式状态和方法
+    return {
+      map,
+      mapConfig,
+      graphics,
+      highlighSelect,
+      pointTitle,
+      desserts,
+      selectedItem,
+      items,
+      drawer,
+      mini,
+      andrawer,
+      anmini,
+      model,
+      pointItems,
+      viewer1,
+      picModel,
+      i,
+      srcvideo,
+      playerOptions,
+      pointGraphic,
+      pointGraphicLayer,
+      horizontalLine,
+      verticalLine,
+      pointIntroduce,
+      _createMapView,
+      flicker,
+      clickLocation,
+      inited,
+      eventHandler,
+      onListClickHandler,
+      onPlayerPlay,
+      onPlayerPause
+    };
+  }
 };
 </script>
 

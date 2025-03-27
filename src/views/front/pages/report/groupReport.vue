@@ -289,83 +289,97 @@
 
 <script>
 import axios from "axios";
-import { mapGetters, mapState } from "vuex";
-import debounce from "lodash/debounce"
+import debounce from "lodash/debounce";
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
+import { ref, reactive, computed, onMounted, onBeforeUpdate } from 'vue';
+import { useStore } from 'vuex';
+
 export default {
   name: "groupReport",
-  data() {
-    return {
-      isTimeout: false,
-      dialogKey: 0,
-      FileSize: 0,
-      text: "提交",
-      IsSending: false,
-      /* 将从sesstionstorage中传来的is_leader字符串改为boolean */
-      isLeader: Boolean(sessionStorage.is_leader === "true"),
-      list: [],
-
-      isBlock: false,
-      dialog: false,
-      report_text: "",
-      show_report: true,
-      unshow_report: false,
-      reportsrc: "", //实习报告链接
-      group_id: "",
-      class_name: "",
-      input_time: "", //提交时间
-      input_content:
-        "这次地理综合实习是一个全新的体验。以往我们上地理课都是仅限于书本，视频还有图片。在这次综合实习我们到了实地进行考察，全方面的观察了各种地理现象，通过老师的讲解以及现场观察，我们对知识的了解比以往更加深刻。通过这种教学形式，我们不仅能够加深专业知识的理解，还能结合实地内容举一反三。这次的综合实习收获颇多，希望能够多多开展类似学科活动。",
-      Qus_headers: [
-        {
-          text: "问题",
-          align: "start",
-          value: "question",
-          sortable: false,
-        },
-        {
-          text: "回答",
-          align: "start",
-          value: "answer",
-          sortable: false,
-        },
-        {
-          text: "截止时间",
-          value: "limit",
-          sortable: true,
-          width:'200px'
-        },
-        {
-          text: "作答状态",
-          value: "answerStatus",
-          width:'100px'
-        },
-      ],
-      
-      qusdialog: false,
-      current_ans: "", //绑定问题答案
-      current_ques: "", //绑定点击问题
-      que_id: "",
-      rule: {
-        max: (v) => v <= 100 || "只能小于100",
-        min: (v) => 0 <= v || "不能小于0",
-        len: (v) => v.length > 0 || "不能为空",
+  setup() {
+    // 初始化 store
+    const store = useStore();
+    
+    // 响应式状态
+    const isTimeout = ref(false);
+    const dialogKey = ref(0);
+    const FileSize = ref(0);
+    const text = ref("提交");
+    const IsSending = ref(false);
+    /* 将从sesstionstorage中传来的is_leader字符串改为boolean */
+    const isLeader = ref(Boolean(sessionStorage.is_leader === "true"));
+    const list = ref([]);
+    const isBlock = ref(false);
+    const dialog = ref(false);
+    const report_text = ref("");
+    const show_report = ref(true);
+    const unshow_report = ref(false);
+    const reportsrc = ref(""); // 实习报告链接
+    const group_id = ref("");
+    const class_name = ref("");
+    const input_time = ref(""); // 提交时间
+    const input_content = ref(
+      "这次地理综合实习是一个全新的体验。以往我们上地理课都是仅限于书本，视频还有图片。在这次综合实习我们到了实地进行考察，全方面的观察了各种地理现象，通过老师的讲解以及现场观察，我们对知识的了解比以往更加深刻。通过这种教学形式，我们不仅能够加深专业知识的理解，还能结合实地内容举一反三。这次的综合实习收获颇多，希望能够多多开展类似学科活动。"
+    );
+    
+    const Qus_headers = ref([
+      {
+        text: "问题",
+        align: "start",
+        value: "question",
+        sortable: false,
       },
-      cancelToken: null,
+      {
+        text: "回答",
+        align: "start",
+        value: "answer",
+        sortable: false,
+      },
+      {
+        text: "截止时间",
+        value: "limit",
+        sortable: true,
+        width: '200px'
+      },
+      {
+        text: "作答状态",
+        value: "answerStatus",
+        width: '100px'
+      },
+    ]);
+    
+    const qusdialog = ref(false);
+    const current_ans = ref(""); // 绑定问题答案
+    const current_ques = ref(""); // 绑定点击问题
+    const que_id = ref("");
+    
+    const rule = reactive({
+      max: (v) => v <= 100 || "只能小于100",
+      min: (v) => 0 <= v || "不能小于0",
+      len: (v) => v.length > 0 || "不能为空",
+    });
+    
+    let cancelToken = null;
+
+    // 计算属性
+    const Qus_desserts = computed(() => store.getters.Qus_desserts);
+    const groupAssess = computed(() => store.state.groupAssess);
+    const ddl = computed(() => store.state.ddl);
+
+    // 方法
+    // 计算文件大小
+    const change_size = () => {
+      if (report_text.value == "" || report_text.value == null) FileSize.value = 0;
+      else FileSize.value = (report_text.value.size / (1024 * 1024)).toFixed(3);
     };
-  },
-  methods: {
-    change_size() {
-      if (this.report_text == "" || this.report_text == null) this.FileSize = 0;
-      else this.FileSize = (this.report_text.size / (1024 * 1024)).toFixed(3);
-    },
-    get_group_menmark() {
+
+    // 获取组员评分信息
+    const get_group_menmark = () => {
       let mem = sessionStorage.group_member;
-
       mem = mem.slice(1, -1);
-
       mem = mem.split(",");
+      
       axios({
         method: "get",
         url: "https://danxiagis.top:8081/teacher/getPerformance", //http://danxiagis.top:3000/ui/teacher/studentList
@@ -391,18 +405,20 @@ export default {
           }
         }
         arry.sort((a, b) => a.id - b.id);
-        this.list = arry;
+        list.value = arry;
       });
-    },
-    /*  */
-    send_point() {
+    };
+
+    // 提交组长评分
+    const send_point = () => {
       let mem_info = [];
-      for (let i of this.list) {
+      for (let i of list.value) {
         mem_info.push({
           stu_id: Number(i.id),
           score: Number(i.leader_mark),
         });
       }
+      
       axios({
         method: "post",
         url: "https://danxiagis.top:8081/assessment/leaderMark",
@@ -418,54 +434,58 @@ export default {
           
           let arr =  res.scores.map(item => {
             return { stu_id: item.stu_id, score: item.score };
-        }); */
+          }); */
           //
-          this.get_leadermark();
+          get_leadermark();
         })
         .catch((err) => {
           console.log(err);
           alert(err);
         });
-    },
-    get_leadermark() {
+    };
+
+    // 获取组长评分
+    const get_leadermark = () => {
       axios({
         method: "get",
         url: "https://danxiagis.top:8081/teacher/getPerformance",
       }).then((response) => {
         let res = response.data;
-        for (let i = 0; i < this.list.length; i++) {
+        for (let i = 0; i < list.value.length; i++) {
           for (let j = 0; j < res.length; j++) {
-            if (this.list[i].id == res[j].stu_id) {
-              this.list[i].leader_mark = res[j].leaderScoring;
-              
+            if (list.value[i].id == res[j].stu_id) {
+              list.value[i].leader_mark = res[j].leaderScoring;
             }
           }
         }
       });
-    },
-    //上传报告
-    send_rtext() {
-      this.dialogKey++;
-      if (this.report_text == "") {
+    };
+
+    // 上传报告
+    const send_rtext = () => {
+      dialogKey.value++;
+      if (report_text.value == "") {
         alert("请选择上传文件");
-        this.dialog = false;
+        dialog.value = false;
         return;
       }
-      if (this.FileSize > 100) {
+      if (FileSize.value > 100) {
         alert("文件大于100MB，上传失败");
         return;
       }
-      this.cancelToken = axios.CancelToken.source();
-      this.IsSending = true;
-      this.dialogKey++;
-      console.log("dia", this.dialogKey);
+      
+      cancelToken = axios.CancelToken.source();
+      IsSending.value = true;
+      dialogKey.value++;
+      console.log("dia", dialogKey.value);
+      
       /* this.report_text.size */
-      this.class_name = sessionStorage.class_name.substring(0, 2);
-      this.group_id = sessionStorage.group_id;
+      class_name.value = sessionStorage.class_name.substring(0, 2);
+      group_id.value = sessionStorage.group_id;
       let param = new FormData();
-      param.append("class_name", this.class_name);
-      param.append("group_id", this.group_id);
-      param.append("file", this.report_text);
+      param.append("class_name", class_name.value);
+      param.append("group_id", group_id.value);
+      param.append("file", report_text.value);
       
       axios({
         method: "post",
@@ -474,34 +494,38 @@ export default {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        cancelToken: this.cancelToken.token,
+        cancelToken: cancelToken.token,
       })
         .then((res) => {
-          this.dialogKey++;
-          this.IsSending = false;
+          dialogKey.value++;
+          IsSending.value = false;
           setTimeout(function () {
             alert(res.data);
           }, 500);
 
-          this.Getreport();
+          Getreport();
         })
         .catch((err) => {
-          this.IsSending = false;
+          IsSending.value = false;
           if (axios.isCancel(err)) alert(err.message);
           else alert("上传出错", err);
         });
 
       // console.log(param)
-    },
-    cancelUpload() {
-      this.dialogKey++;
-      this.IsSending = false;
-      if (this.cancelToken) {
+    };
+
+    // 取消上传
+    const cancelUpload = () => {
+      dialogKey.value++;
+      IsSending.value = false;
+      if (cancelToken) {
         /* error.message为''中的 */
-        this.cancelToken.cancel("上传被用户取消。");
+        cancelToken.cancel("上传被用户取消。");
       }
-    },
-    Getreport() {
+    };
+
+    // 获取报告
+    const Getreport = () => {
       let id = sessionStorage.group_id;
       axios({
         method: "get",
@@ -512,142 +536,166 @@ export default {
         for (let a = 0; a < res.length; a++) {
           //是这个组的报告
           if (res[a].group_num == id) {
-            this.reportsrc = res[a].report_url + "?rand=" + Math.random();
-            this.input_time = res[a].dateChange;
+            reportsrc.value = res[a].report_url + "?rand=" + Math.random();
+            input_time.value = res[a].dateChange;
           }
         }
-        if (this.reportsrc == "") {
-          this.unshow_report = true;
-          this.show_report = false;
+        if (reportsrc.value == "") {
+          unshow_report.value = true;
+          show_report.value = false;
         } else {
-          this.show_report = true;
-          this.unshow_report = false;
-          this.text = "再次提交";
+          show_report.value = true;
+          unshow_report.value = false;
+          text.value = "再次提交";
         }
         //console.log(this.reportsrc);
       });
-    },
-    //输入答案弹窗的索引
-    edit_quesItem(e) {
-      this.current_ques = e.question;
-      this.que_id = e.id;
+    };
+
+    // 输入答案弹窗的索引
+    const edit_quesItem = (e) => {
+      current_ques.value = e.question;
+      que_id.value = e.id;
       // 创建一个新的 Date 对象，它表示当前的日期和时间
       let now = new Date().getTime();
       let limit = e.limit;
       limit = e.limit.replace(" ", "T");
       let str = Date.parse(limit);
-      console.log('e',e.answerStatus);
+      console.log('e', e.answerStatus);
       /* 如果这一条的状态是未回答且超时，则不允许查看 */
       
-      if (now > str&&e.answerStatus==undefined) {
-      
+      if (now > str && e.answerStatus == undefined) {
         alert("已超时，无法作答");
         return;
       }
-        
       
-      
-      this.qusdialog = true;
+      qusdialog.value = true;
 
-      let res = this.groupAssess;
-      if (!res) this.current_ans = "";
+      let res = groupAssess.value;
+      if (!res) current_ans.value = "";
 
-      for (let i = 0; i < this.Qus_desserts.length; i++) {
-        if (res[i].a_id == this.que_id) {
-          this.current_ans = res[i].answer;
+      for (let i = 0; i < Qus_desserts.value.length; i++) {
+        if (res[i].a_id == que_id.value) {
+          current_ans.value = res[i].answer;
           break;
-        } else this.current_ans = "";
+        } else current_ans.value = "";
       }
-    },
-    startInput(){
-      NProgress.start()
-      this.qusinput()
-    },
-    //考核问题提交
-    qusinput:debounce(function(){
+    };
+
+    // 开始输入答案
+    const startInput = () => {
+      NProgress.start();
+      qusinput();
+    };
+
+    // 考核问题提交
+    const qusinput = debounce(() => {
       let id = sessionStorage.group_id;
-      if (this.current_ans.trim().length === 0) {
+      if (current_ans.value.trim().length === 0) {
         alert("还未输入答案");
         return;
       }
-      let params={
-          group_id: id,
-          answer: this.current_ans,
-          assess_id: this.que_id,
-        }
+      let params = {
+        group_id: id,
+        answer: current_ans.value,
+        assess_id: que_id.value,
+      };
         
       axios({
         method: "post",
         url: "https://danxiagis.top:8081/assessment/sumbitAssessment",
-        data:params
+        data: params
       }).then((response) => {
         console.log(response);
-        NProgress.done()
+        NProgress.done();
         alert("提交成功");
-        this.$store.dispatch("getGroupAssess", sessionStorage.getItem("group_id"));
-        this.qusdialog = false;
+        store.dispatch("getGroupAssess", sessionStorage.getItem("group_id"));
+        qusdialog.value = false;
       });
-    },3000),
+    }, 3000);
     
-    //********获取问题要写一个接口
-    /* get_que() {
-      for (let i = 0; i < this.response.length; i++) {
-        this.Qus_desserts.push({
-          question: this.response[i].title,
-          id: this.response[i]._id,
-          limit: this.response[i].end_time.split(".")[0].replace("T", " "),
-        });
-      }
-    }, */
-    isPassTime() {
-      console.log('ddl',this.ddl);
-      let limit = this.ddl;
+    // 检查截止时间
+    const isPassTime = () => {
+      console.log('ddl', ddl.value);
+      let limit = ddl.value;
       let now = new Date().getTime();
       
-      limit = this.ddl.replace(" ", "T");
+      limit = ddl.value.replace(" ", "T");
       let str = Date.parse(limit);
-      if (now > str) this.isTimeout = true;
-    },
-    getAssessStatus() {/* this.Qus_desserts有时候是[]，顺序有问题了 */
-      console.log('asssessssss',this.groupAssess,this.Qus_desserts);
-      for(let i=0;i<this.Qus_desserts.length;i++)
-      {
-        for(let j=0;j<this.groupAssess.length;j++)
-        {
-          if(this.Qus_desserts[i].id==this.groupAssess[j].a_id)
-          {
-            this.Qus_desserts[i].answerStatus = true;
+      if (now > str) isTimeout.value = true;
+    };
+
+    // 获取答案状态
+    const getAssessStatus = () => {
+      console.log('asssessssss', groupAssess.value, Qus_desserts.value);
+      for (let i = 0; i < Qus_desserts.value.length; i++) {
+        for (let j = 0; j < groupAssess.value.length; j++) {
+          if (Qus_desserts.value[i].id == groupAssess.value[j].a_id) {
+            Qus_desserts.value[i].answerStatus = true;
             break;
           }
         }
       }
-      console.log("ss", this.Qus_desserts);
-    },
-  },
-  computed: {
-    /* ...mapState({ response: (state) => state.assessment }), */
-    ...mapGetters(['Qus_desserts']),
-    ...mapState({ groupAssess: (state) => state.groupAssess }),
-    ...mapState({ ddl: (state) => state.ddl }),
-  },
-  created() {
-    this.$store.dispatch('getAllAssessment')
-    this.Getreport();
-    this.get_group_menmark();
-    this.get_leadermark();
-    this.$store.dispatch("getDDL");
-  },
-   mounted() {
-    /* this.get_que(); */
-    
-    
-    
-  },
-  async beforeUpdate(){
-    await this.$store.dispatch("getGroupAssess", sessionStorage.getItem("group_id"));
-    this.getAssessStatus()
-    console.log('ass',this.Qus_desserts);
-    this.isPassTime();
+      console.log("ss", Qus_desserts.value);
+    };
+
+    // 生命周期钩子
+    onMounted(() => {
+      store.dispatch('getAllAssessment');
+      Getreport();
+      get_group_menmark();
+      get_leadermark();
+      store.dispatch("getDDL");
+    });
+
+    onBeforeUpdate(async () => {
+      await store.dispatch("getGroupAssess", sessionStorage.getItem("group_id"));
+      getAssessStatus();
+      console.log('ass', Qus_desserts.value);
+      isPassTime();
+    });
+
+    // 返回响应式状态和方法
+    return {
+      isTimeout,
+      dialogKey,
+      FileSize,
+      text,
+      IsSending,
+      isLeader,
+      list,
+      isBlock,
+      dialog,
+      report_text,
+      show_report,
+      unshow_report,
+      reportsrc,
+      group_id,
+      class_name,
+      input_time,
+      input_content,
+      Qus_headers,
+      qusdialog,
+      current_ans,
+      current_ques,
+      que_id,
+      rule,
+      Qus_desserts,
+      groupAssess,
+      ddl,
+      change_size,
+      get_group_menmark,
+      send_point,
+      get_leadermark,
+      send_rtext,
+      cancelUpload,
+      Getreport,
+      edit_quesItem,
+      startInput,
+      qusinput,
+      isPassTime,
+      getAssessStatus
+    };
   }
 };
 </script>

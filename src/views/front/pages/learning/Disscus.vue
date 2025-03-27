@@ -180,20 +180,24 @@
 </template>
 
 <script>
+import { ref, reactive, computed, onMounted, onCreated } from 'vue';
+import { useRoute } from 'vue-router';
+
 export default {
   name: "Disscus",
-
-  data: () => ({
-    model: 2,
-   
-    show: false,
-    isvisiter:'',
-    commentmessage: "",
-    message: "",
-    marker: true,
-    iconIndex: 0,
-    isteacher:'',
-    icons: [
+  
+  setup() {
+    const route = useRoute();
+    
+    const model = ref(2);
+    const show = ref(false);
+    const isvisiter = ref('');
+    const commentmessage = ref("");
+    const message = ref("");
+    const marker = ref(true);
+    const iconIndex = ref(0);
+    const isteacher = ref('');
+    const icons = [
       "mdi-emoticon",
       "mdi-emoticon-cool",
       "mdi-emoticon-dead",
@@ -202,109 +206,144 @@ export default {
       "mdi-emoticon-neutral",
       "mdi-emoticon-sad",
       "mdi-emoticon-tongue",
-    ],
-    list: [
+    ];
+    
+    const list = reactive([
       {
         username: "学生A",
         Text: "a",
-       
         comment: false,
         commentList: [
           {
             username: "xsB",
             replytext: "yes",
-            
           },
         ],
       },
-    ],
-    Question: "",
-  }),
-  computed: {
-    icon() {
-      return this.icons[this.iconIndex];
-    },
-  },
-  mounted(){
-
-  },
-  created(){
-    var self = this;
-    // console.log(self.$route.params.title);
-    self.Question =self.$route.params.title
+    ]);
     
-    if(sessionStorage.isteacher=='true'){
-      this.isteacher=true
-    }else
-    { this.isteacher=false }
-    if(sessionStorage.isvisiter=='true'){
-      this.isvisiter=false
-    }else
-    { this.isvisiter=true }
-  },
-  methods: {
+    const Question = ref("");
+    
+    // 计算属性
+    const icon = computed(() => {
+      return icons[iconIndex.value];
+    });
+    
     // 评论区回复框
-    Onclick(item){
+    const Onclick = (item) => {
       // console.log(e.target);
-      if(item.comment){
-      // console.log(item)
-      item.comment = false;
-      // console.log(item.comment);
-      }else{
-       item.comment = true;
-      }
-     
-    },
-    deleteText(index) {
-      this.list.splice(index, 1);
-    },
-    deletecommentText(index, cindex) {
-      this.list[index].commentList.splice(cindex, 1);
-    },
-
-    sendMessage() {
-      // this.resetIcon();
-      // console.log(sessionStorage.username);
-      if (!this.message) {
-        alert("评论不能为空");
-        return  
+      if(item.comment) {
+        // console.log(item)
+        item.comment = false;
+        // console.log(item.comment);
       } else {
-        this.list.push({ Text: this.message, comment: false ,username:sessionStorage.userName,commentList:[]});
-        
+        item.comment = true;
       }
-      // alert(this.list.index);
-      this.clearMessage();
-    },
-    clearMessage() {
-      //console.log(11111);
-      this.message = "";
-    },
-    resetIcon() {
-      this.iconIndex = 0;
-    },
-    changeIcon() {
-      this.iconIndex === this.icons.length - 1
-        ? (this.iconIndex = 0)
-        : this.iconIndex++;
-    },
-    sendcommentMessage(index) {
-      if (!this. commentmessage) {
+    };
+    
+    const deleteText = (index) => {
+      list.splice(index, 1);
+    };
+    
+    const deletecommentText = (index, cindex) => {
+      list[index].commentList.splice(cindex, 1);
+    };
+    
+    const sendMessage = () => {
+      // resetIcon();
+      // console.log(sessionStorage.username);
+      if (!message.value) {
         alert("评论不能为空");
         return;
       } else {
-        
-        // console.log(this.list[index]);
-        //  console.log(this.list[index].commentList);
-        //  console.log(index);
-        this.list[index].commentList.push({
-          replytext: this.commentmessage,
-          username:sessionStorage.userName,
+        list.push({ 
+          Text: message.value, 
+          comment: false, 
+          username: sessionStorage.userName, 
+          commentList: []
         });
       }
+      // alert(list.index);
+      clearMessage();
+    };
+    
+    const clearMessage = () => {
+      //console.log(11111);
+      message.value = "";
+    };
+    
+    const resetIcon = () => {
+      iconIndex.value = 0;
+    };
+    
+    const changeIcon = () => {
+      iconIndex.value === icons.length - 1
+        ? (iconIndex.value = 0)
+        : iconIndex.value++;
+    };
+    
+    const sendcommentMessage = (index) => {
+      if (!commentmessage.value) {
+        alert("评论不能为空");
+        return;
+      } else {
+        // console.log(list[index]);
+        // console.log(list[index].commentList);
+        // console.log(index);
+        list[index].commentList.push({
+          replytext: commentmessage.value,
+          username: sessionStorage.userName,
+        });
+      }
+      
+      commentmessage.value = "";
+    };
+    
+    // 模拟 created 生命周期钩子
+    // 获取传递的问题标题
+    Question.value = route.params.title;
+    
+    // 判断用户权限
+    if (sessionStorage.isteacher == 'true') {
+      isteacher.value = true;
+    } else {
+      isteacher.value = false;
+    }
+    
+    if (sessionStorage.isvisiter == 'true') {
+      isvisiter.value = false;
+    } else {
+      isvisiter.value = true;
+    }
+    
+    const onScroll = () => {
+      // 滚动处理函数
+    };
 
-      this.commentmessage = "";
-    },
-  },
+    return {
+      model,
+      show,
+      isvisiter,
+      commentmessage,
+      message,
+      marker,
+      iconIndex,
+      isteacher,
+      icons,
+      list,
+      Question,
+      icon,
+      Onclick,
+      deleteText,
+      deletecommentText,
+      sendMessage,
+      clearMessage,
+      resetIcon,
+      changeIcon,
+      sendcommentMessage,
+      onScroll
+    };
+  }
 };
 </script>
 <style>

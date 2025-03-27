@@ -89,7 +89,7 @@
 </template>
 
 <script>
-import { ref, reactive, computed, getCurrentInstance } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import axios from "axios";
@@ -99,7 +99,6 @@ export default {
   setup() {
     const router = useRouter();
     const store = useStore();
-    const { proxy } = getCurrentInstance();
 
     // 响应式状态
     const loginshow = ref(true);
@@ -250,6 +249,10 @@ export default {
         localStorage.setItem("pwd", pwd.value);
       }
     };
+
+    onMounted(() => {
+      // Add any onMounted logic here if needed
+    });
 
     return {
       loginshow,

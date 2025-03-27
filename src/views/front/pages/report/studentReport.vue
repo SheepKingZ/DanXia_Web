@@ -84,90 +84,104 @@ import axios from 'axios'
 import debounce from "lodash/debounce"
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
+import { ref, onMounted } from 'vue';
 
 export default {
   name: "studentReport",
-  data() {
-    return {
-      date:'',
-      though_text:'',
-      menReports: [],
-      isSubmit:null
-    };
-  },
-  methods: {
-    person_report(){
-      let per_id = sessionStorage.group_id
+  setup() {
+    // 响应式状态
+    const date = ref('');
+    const though_text = ref('');
+    const menReports = ref([]);
+    const isSubmit = ref(null);
+
+    // 获取个人报告和组内成员感想
+    const person_report = () => {
+      let per_id = sessionStorage.group_id;
       axios({
         method: "get",
         url: "https://danxiagis.top:8081/assessment/getOneGroupThought",
-        params:{
-          group_id:per_id
+        params: {
+          group_id: per_id
         }
       }).then((response) => {
-        let res = response.data
-        let Arry = []
-        console.log('res',res);
-        for(var a = 0;a<res.length;a++){
+        let res = response.data;
+        let Arry = [];
+        console.log('res', res);
+        for (var a = 0; a < res.length; a++) {
           let arr = {
             name: res[a].name,
             content: res[a].though,
           }
         
-          Arry.push(arr)
-          if(res[a].name==sessionStorage.userName){
-            this.date = res[a].date.substring(0, 10)
-            this.though_text = res[a].though
+          Arry.push(arr);
+          if (res[a].name == sessionStorage.userName) {
+            date.value = res[a].date.substring(0, 10);
+            though_text.value = res[a].though;
           }
-          console.log(res.stu_id,localStorage.getItem('name'));
-          if(res[a].stu_id==localStorage.getItem('name'))
-          {
+          console.log(res.stu_id, localStorage.getItem('name'));
+          if (res[a].stu_id == localStorage.getItem('name')) {
             console.log('已提交');
-            this.isSubmit=true
+            isSubmit.value = true;
           }
         }
-        this.menReports = Arry
+        menReports.value = Arry;
       }).catch((error) => {
-          console.log(error);
-          // alert("请求出错了");
-        });
-    },
-    startSubmit(){
-      NProgress.start()
-      this.Submit()
-    },
-    Submit:debounce(function(){
-      if(!this.though_text||this.though_text.trim().length === 0)
-      {
-        alert('感想为空')
+        console.log(error);
+        // alert("请求出错了");
+      });
+    };
+
+    // 开始提交
+    const startSubmit = () => {
+      NProgress.start();
+      Submit();
+    };
+    
+    // 提交感想
+    const Submit = debounce(() => {
+      if (!though_text.value || though_text.value.trim().length === 0) {
+        alert('感想为空');
         return;
       }
-      let id = sessionStorage.stu_id
-      let g_id=sessionStorage.group_id
-      let params={
-          stu_id:id,
-          though:this.though_text,
-          group_id:g_id
-        }
-        console.log('params');
+      let id = sessionStorage.stu_id;
+      let g_id = sessionStorage.group_id;
+      let params = {
+        stu_id: id,
+        though: though_text.value,
+        group_id: g_id
+      };
+      console.log('params');
       axios({
-        method:'post',
-        url:'https://danxiagis.top:8081/assessment/sumbitThought',
-        data:params,
-      }).then(response=>{
+        method: 'post',
+        url: 'https://danxiagis.top:8081/assessment/sumbitThought',
+        data: params,
+      }).then(response => {
         alert(response.data);
-        NProgress.done()
-        this.person_report()
+        NProgress.done();
+        person_report();
         console.log(response);
-      }).catch(err=>{
+      }).catch(err => {
         console.log(err);
-      })
-    },3000)
-  },
-  computed: {},
-  mounted: function () {
-    this.person_report();
-  },
+      });
+    }, 3000);
+
+    // 组件挂载时获取数据
+    onMounted(() => {
+      person_report();
+    });
+
+    // 返回响应式状态和方法
+    return {
+      date,
+      though_text,
+      menReports,
+      isSubmit,
+      person_report,
+      startSubmit,
+      Submit
+    };
+  }
 };
 </script>
 

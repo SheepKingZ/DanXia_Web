@@ -32,418 +32,429 @@
 
 <script>
 import { loadModules } from "esri-loader";
-import * as echarts from "echarts";
-import NProgress from 'nprogress'
+import { ref, reactive, onMounted, onBeforeUnmount } from 'vue';
+import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
+
 export default {
-  data() {
-    return {
-      c_flag:false,
-      map: "",
-      mapConfig: {
-        container: "sectionLine",
-        mapView: null,
-      },
-      graphicsLayer: null, //几何图层
-      pointList: [], //记录剖面线的每一个结点
-      polyline: null, //绘制的线
-      sketchViewModel: null, //绘制折线的工具
-      lengthArray: [],
-      RoutesfeatureLayer: null, //采集的道路数据
-      highlighSelect: "", //选中的目标
-      routeSelect: "", //路线的监听事件
-      option: false, //折线图的可见性
-      chart: null, //echar折线图
-      isstudent:true,//是否可以使用采集路线
-    };
-  },
-  methods: {
-   
+  name: "visible",
+  setup() {
+    // 响应式状态
+    const c_flag = ref(false); //是否在绘制
+    const map = ref(null); //地图对象
+    const mapConfig = reactive({
+      container: "sectionLine", //容器id
+      sceneView: null,
+    });
+    const graphicsLayer = ref(null); //线图层
+    const pointList = ref([]); //点数组
+    const polyline = ref(null); //线
+    const sketchViewModel = ref(null); //草图模型
+    const lengthArray = ref([]); //线段长度
+    const RoutesfeatureLayer = ref(null); //路线图层
+    const highlighSelect = ref(null); //选中
+    const routeSelect = ref(null); //选中的路线
+    const option = reactive({
+      //定义一个包含有JS API中js开发包和css样式文件的对象
+      url: "https://js.arcgis.com/4.19/init.js",
+      css: "https://js.arcgis.com/4.19/esri/themes/light/main.css",
+    });
+    const chart = ref(null); //图表
+    const isstudent = ref(true); //是否是学生
+
     //创建地图
-    _createMapView: function () {
-      const _self = this; //定义一个_self防止后续操作中this丢失
-      const option = {
-        //定义一个包含有JS API中js开发包和css样式文件的对象
-        url: "https://js.arcgis.com/4.19/init.js",
-        css: "https://js.arcgis.com/4.19/esri/themes/light/main.css",
-      };
+    const _createMapView = function() {
+      const _self = { map, mapConfig, graphicsLayer, polyline, sketchViewModel, RoutesfeatureLayer }; //定义一个_self对象引用响应式变量
+      
       //通过loadModules来做衔接
       loadModules(
         [
           "esri/Map",
-          "esri/views/MapView",
+          "esri/views/SceneView",
+          "esri/layers/SceneLayer",
           "esri/layers/GraphicsLayer",
           "esri/widgets/Sketch/SketchViewModel",
-          "esri/geometry/Polyline",
           "esri/layers/FeatureLayer",
         ],
         option
       )
-        .then(
-          ([
-            Map,
-            MapView,
-            GraphicsLayer,
-            SketchViewModel,
-            Polyline,
-            FeatureLayer,
-          ]) => {
-            //业务代码在此处编写
-            _self.graphicsLayer = new GraphicsLayer({
-              elevationInfo: { mode: "on-the-ground" },
-            });
-            _self.map = new Map({
-              //实例化地图
-              basemap: "hybrid",
-              ground: "world-elevation",
-              layers: [_self.graphicsLayer],
-            });
-
-            _self.mapConfig.mapView = new MapView({
-              //实例化地图视图
-              map: _self.map,
-              zoom: 14,
-              center: [113.754555, 25.026711],
-
-              container: _self.mapConfig.container,
-            });
-            _self.mapConfig.mapView.when().then(function() {
-                // 完成加载
-                NProgress.done();
-            }).catch(function(error) {
-                console.error("地图加载出错: ", error);
-                NProgress.done();
-            });
-            var boder_featureLayer = new FeatureLayer({
-              url: "https://danxiagis.top:6443/arcgis/rest/services/DanXia/danxiaBorder/FeatureServer",
-              renderer: {
-                type: "simple",
-                symbol: {
-                  type: "simple-line",
-                  width: "3px",
-                  color: "#BB5500",
-                },
-              },
-            });
-            _self.map.add(boder_featureLayer);
-            //画出的线的样式
-            const line = {
-              type: "simple-line",
-              color: 'cyan',
-              width: 2,
-            };
-
-            //设置sketchViewModel
-            _self.sketchViewModel = new SketchViewModel({
-              layer: _self.graphicsLayer,
-              view: _self.mapConfig.mapView,
-              polylineSymbol: line,
-              snappingOptions: "selfEnabled", //捕捉自己的状态
-            });
-
-            //绘制的线
-            _self.polyline = new Polyline();
-
-            //创建采集的道路注记样式
-            const labelClass = {
-              symbol: {
-                type: "text",
-                color: "white",
-                font: {
-                  family: "Playfair Display",
-                  size: 12,
-                  weight: "bold",
-                },
-              },
-              labelPlacement: "center-along",
-              labelPosition: "curved",
-              repeatLabel: "true", //重复标签
-              repeatDistanceLabel: 100,
-              labelExpressionInfo: {
-                expression: "$feature.name",
-              },
-            };
-
-            const routesURL =
-              "https://danxiagis.top:6443/arcgis/rest/services/DanXia/myRoutes/FeatureServer/" +
-              _self.$store.getters.group_id;
-            console.log(routesURL);
-            _self.RoutesfeatureLayer = new FeatureLayer({
-              url: routesURL,
-              labelingInfo: [labelClass],
-              renderer: {
-                type: "simple",
-                symbol: {
-                  type: "simple-line",
-                  width: "5px",
-                  color: "#3073c0",
-                },
-              },
-            });
-          }
-        )
-        .catch((err) => {
-          _self.$message("地图创建失败，" + err);
-        });
-    },
-    //激活sketchviewModel工具
-    creatSke: function () {
-      this.c_flag=false;
-      const _self = this;
-      _self.graphicsLayer.removeAll();
-      _self.sketchViewModel.create("polyline");
-      //关闭道路的监听
-      if (_self.routeSelect) {
-        _self.routeSelect.remove();
-      }
-      //移除道路和高亮
-      _self.map.remove(_self.RoutesfeatureLayer);
-      if (_self.highlighSelect) {
-        _self.highlighSelect.remove();
-      }
-      //设置SketchViewModel的监听状态，当绘画完成后、取消后
-      const skeCreate = _self.sketchViewModel.on("create", function (event) {
-        if (event.state === "complete") {
-          // console.log(_self.graphicsLayer);
-          // console.log(_self.graphicsLayer.graphics.items[0].geometry.paths[0]);
-          _self.polyline = _self.graphicsLayer.graphics.items[0].geometry;
-          _self.drawProfile(_self.polyline);
-          skeCreate.remove(); //断开事件侦听器的连接
+      .then(
+        ([
+          Map,
+          SceneView,
+          SceneLayer,
+          GraphicsLayer,
+          SketchViewModel,
+          FeatureLayer,
+        ]) => {
+          //实例化地图
+          _self.map.value = new Map({
+            basemap: "satellite", // 地形底图
+            ground: "world-elevation" // 地形
+          });
+          
+          //实例化缓冲区
+          _self.graphicsLayer.value = new GraphicsLayer();
+          
+          // 范围图层
+          var sceneLayer = new SceneLayer({
+            url: "https://danxiagis.top:6443/arcgis/rest/services/DanXia/dxDEM/SceneServer",
+          });
+          sceneLayer.load().catch((error) => {
+            console.log("图层加载失败:", error);
+          });
+          
+          // 添加到地图
+          _self.map.value.add(sceneLayer);
+          _self.map.value.add(_self.graphicsLayer.value);
+          
+          // 实例化视图
+          _self.mapConfig.sceneView = new SceneView({
+            container: _self.mapConfig.container,
+            map: _self.map.value,
+            camera: {
+              position: [113.754, 25.0267, 1500],
+              heading: 0,
+              tilt: 60
+            }
+          });
+          _self.mapConfig.sceneView.popup.defaultPopupTemplateEnabled = true;
+          
+          // 实例化线条
+          _self.polyline.value = {
+            type: "polyline",
+            paths: [],
+            "spatialReference": {
+              "latestWkid": 3857,
+              "wkid": 102100
+            }
+          };
+          
+          // 实例化草图控件
+          _self.sketchViewModel.value = new SketchViewModel({
+            layer: _self.graphicsLayer.value,
+            view: _self.mapConfig.sceneView
+          });
+          
+          // 线图层
+          _self.RoutesfeatureLayer.value = new FeatureLayer({
+            url: "https://danxiagis.top:6443/arcgis/rest/services/DanXia/dxRoutes/FeatureServer/0",
+            outFields: ["*"]
+          });
+          _self.map.value.add(_self.RoutesfeatureLayer.value);
+          
+          // 在地图加载完后设置
+          _self.mapConfig.sceneView.when(() => {
+            NProgress.done();
+          });
         }
-        if (event.state === "cancel") {
-          skeCreate.remove(); //断开事件侦听器的连接
-        }
+      )
+      .catch((err) => {
+        console.error("地图创建失败,", err);
+        NProgress.done();
       });
-
-      // 图形备份以还原已取消的更新过程
-      let updatebackupgraphic;
-
-      const skeUp = _self.sketchViewModel.on("update", function (event) {
-        if (event.state === "start") {
-          updatebackupgraphic = event.graphics[0].clone();
-        }
-        if (event.state === "complete") {
-          if (event.aborted) {
-            _self.graphicsLayer.removeAll();
-            // 在开始更新过程之前还原到图形
-            _self.graphicsLayer.remove(event.graphics[0]);
-            _self.graphicsLayer.add(updatebackupgraphic);
-          }
-          skeUp.remove(); //断开事件侦听器的连接
-        }
-      });
-    },
-
-    //添加该组同学采集的路线数据，并监听地图上的点击事件
-    collectRoutes: function () {
-      this.c_flag=true;
-      const _self = this;
-      _self.graphicsLayer.removeAll();
-      _self.sketchViewModel.complete();
-      //添加道路数据
-      _self.map.add(_self.RoutesfeatureLayer);
-      //道路数据的范围很奇怪，用fullExtent方法反而看不出来在哪里，所以选择回到初始视角
-      _self.RoutesfeatureLayer.when(function () {
-        //   _self.mapConfig.mapView.extent = _self.RoutesfeatureLayer.fullExtent;
-        _self.mapConfig.mapView.zoom = 14;
-        _self.mapConfig.mapView.center = [113.754555, 25.026711];
-      });
-      //添加地图上的点击监听事件
-      _self.routeSelect = _self.mapConfig.mapView.on(
-        "pointer-down",
-        _self.changeRoute
-      );
-    },
-    downloadRoutes:function(){
-
-    },
-    changeRoute: function (event) {
-      const _self = this;
-      const opts = { include: _self.map.RoutesfeatureLayer };
-      _self.graphicsLayer.removeAll();
-      _self.mapConfig.mapView.hitTest(event, opts).then(function (response) {
-        // console.log(response);
-        const routeGraphic = response.results[0].graphic;
-        if (_self.highlighSelect) {
-          _self.highlighSelect.remove();
-        }
-        //高亮显示，视图移动到选中的点
-        _self.highlighSelect =
-          _self.mapConfig.mapView.allLayerViews.items[2].highlight(
-            routeGraphic.attributes["objectid"]
-          );
-        _self.mapConfig.mapView.goTo({
-          target: routeGraphic.geometry,
-        });
-        _self.drawProfile(routeGraphic.geometry);
-      });
-    },
-
-    drawProfile: function (polyline) {
-      // console.log("nihao333");
-      const _self = this; //定义一个_self防止后续操作中this丢失
-      const option = {
-        //定义一个包含有JS API中js开发包和css样式文件的对象
-        url: "https://js.arcgis.com/4.19/init.js",
-        css: "https://js.arcgis.com/4.19/esri/themes/light/main.css",
-      };
-      //通过loadModules来做衔接
-      loadModules(
-        [
-          "esri/geometry/geometryEngine",
-          "esri/geometry/Point",
-          "esri/Graphic",
-          "esri/geometry/Polyline",
-        ],
-        option
-      ).then(([geometryEngine, Point, Graphic, Polyline]) => {
-        //1.对绘制的线进行结点加密
-        var totalLength = geometryEngine.geodesicLength(polyline, "meters");
-        var segLength = totalLength / 50;
-        var desifiedPolyline = geometryEngine.densify(
-          polyline,
-          segLength,
-          "meters"
-        );
-        //把加密后的每一个结点在地图中进行展示
-        //只显示一头一尾两个点
-        for(let i=0;i<2;i++){
-          if(i!=0)
-            i=desifiedPolyline.paths[0].length-1
-          let point=desifiedPolyline.paths[0][i]
-          var graphic = new Graphic({
-              geometry: new Point({
+    };
+    
+    //激活绘制模式
+    const activedrawPolyline = function() {
+      c_flag.value = true;
+      
+      if (sketchViewModel.value) {
+        sketchViewModel.value.create("polyline");
+        sketchViewModel.value.on(["create"], function(event) {
+          if (event.state === "complete") {
+            c_flag.value = false;
+            // 保存绘制点
+            pointList.value = [];
+            // 遍历线节点
+            event.graphic.geometry.paths[0].forEach(point => {
+              pointList.value.push({
                 x: point[0],
                 y: point[1],
-                spatialReference: _self.mapConfig.mapView.spatialReference,
-              }),
-              symbol: {
-                type: "simple-marker",
-                size: 10,
-                color: "coral",
-                style: "circle",
-              },
-            });
-            _self.graphicsLayer.add(graphic);
-        }
-
-        //初始化echar图
-        _self.chart = echarts.init(document.getElementById("echartDiv"));
-        //折线框出现
-        _self.option = true
-        //设置加载动画
-        _self.chart.showLoading({
-          text: "正在加载数据",
-        });
-        //2.提取加密后的线的每一个结点的高程值
-        _self.map.ground
-          .queryElevation(desifiedPolyline)
-          .then(function (result) {
-            var zArray = result.geometry.paths[0].map((point) => {
-              return point[2].toFixed(2);
+                z: point[2] || 0
+              });
             });
             
-            //desifiedPolyline.paths[0]是所有的点
-            var segCount = desifiedPolyline.paths[0].length - 1;
-            _self.lengthArray = [];
-            _self.pointList = [];
-            for (var i = 0; i <= segCount; i++) {
-              var vertices = desifiedPolyline.paths[0].slice(0, i + 1);
-              var segment = new Polyline({
-                paths: vertices,
-                spatialReference: _self.mapConfig.mapView.spatialReference,
-              });
-              var length = geometryEngine
-                .geodesicLength(segment, "meters")
-                .toFixed(0)
-                .toString();
-              _self.lengthArray.push(length);
-              _self.pointList.push({
-                name: length,
-                geometry: new Point({
-                  x: vertices[i][0],
-                  y: vertices[i][1],
-                  spatialReference: _self.mapConfig.mapView.spatialReference,
-                }),
-              });
-            }
-            var data = {
-              x: _self.lengthArray,
-              y: zArray,
-            };
-            _self.chart.hideLoading(); //关闭加载动画
-            _self.createChart(data);
-          });
-      });
-    },
-    Remove(){
-        this.graphicsLayer.removeAll()
-        this.option = false
-        
-    },
-    createChart: function (data) {
-      var option1 = {
-        tooltip: {
-          trigger: "axis",
-          formatter: "海拔：{c}米",
-        },
-        xAxis: {
-          type: "category",
-          boundaryGap: false,
-          data: data.x,
-          name: "距离（单位：米）",
-          nameLocation: "center",
-          nameGap: 30,
-        },
-        yAxis: {
-          type: "value",
-          name: "海拔（单位：米）",
-          nameLocation: "center",
-          nameGap: 40,
-          min: function (value) {
-            return Math.floor(value.min / 100) * 100;
-          },
-        },
-        series: [
-          {
-            data: data.y,
-            type: "line",
-          },
-        ],
-        // download as img
-        toolbox: {
-          show: true,
-          feature: {
-            saveAsImage: {
-              show: true,
-              excludeComponents: ["toolbox"],
-              pixelRatio: 2,
-            },
-          },
-        },
-      };
-      this.chart.setOption(option1);
-      
-    },
-    zoombtn:function(){
-      this.option =! this.option;
-    }
-  },
-  created(){  
-    if(sessionStorage.isteacher=='true'||sessionStorage.isvisiter=='true'){
-      this.isstudent=false
-    }
-  },
-  mounted: function () {
-    NProgress.start();
-    this._createMapView();
+            // 发起GP分析
+            drawProfile(pointList.value, event.graphic);
+          }
+        });
+      }
+    };
     
-    // console.log(sessionStorage)
-  },
-  
-  beforeDestroy() {
-    // 组件销毁前的逻辑
-    NProgress.remove(); 
+    //收集路线
+    const collectRoutes = function() {
+      //清空图层
+      graphicsLayer.value.removeAll();
+      
+      //添加高亮
+      const queryParams = {
+        where: "1=1",
+        returnGeometry: true,
+        outFields: ["*"]
+      };
+      
+      // 查询所有线
+      RoutesfeatureLayer.value.queryFeatures(queryParams).then(function(results) {
+        const option = {
+          //定义一个包含有JS API中js开发包和css样式文件的对象
+          url: "https://js.arcgis.com/4.19/init.js",
+          css: "https://js.arcgis.com/4.19/esri/themes/light/main.css",
+        };
+        
+        //通过loadModules来做衔接
+        loadModules(["esri/Graphic"], option).then(([Graphic]) => {
+          results.features.forEach(function(feature) {
+            const polyline = {
+              type: "polyline",
+              paths: feature.geometry.paths,
+              spatialReference: feature.geometry.spatialReference
+            };
+            
+            const lineSymbol = {
+              type: "simple-line",
+              color: [226, 119, 40],
+              width: 4
+            };
+            
+            const polylineGraphic = new Graphic({
+              geometry: polyline,
+              symbol: lineSymbol,
+              attributes: feature.attributes
+            });
+            
+            graphicsLayer.value.add(polylineGraphic);
+          });
+        });
+      });
+      
+      // 点击事件
+      if (highlighSelect.value) {
+        highlighSelect.value.remove();
+      }
+      
+      highlighSelect.value = mapConfig.sceneView.on("click", function(event) {
+        const screenPoint = event.screenPoint;
+        // 获取点击位置的图形
+        mapConfig.sceneView.hitTest(screenPoint).then(function(response) {
+          const graphic = response.results.find(result => 
+            result.graphic.layer === graphicsLayer.value);
+          
+          if (graphic) {
+            //触发分析
+            routeSelect.value = graphic.graphic;
+            handleRouteChange();
+          }
+        });
+      });
+    };
+    
+    // 处理路线变更
+    const handleRouteChange = function() {
+      const graphic = routeSelect.value;
+      
+      if (graphic && graphic.geometry) {
+        // 保存绘制点
+        pointList.value = [];
+        // 遍历线节点
+        graphic.geometry.paths[0].forEach(point => {
+          pointList.value.push({
+            x: point[0],
+            y: point[1],
+            z: point[2] || 0
+          });
+        });
+        
+        // 发起GP分析
+        drawProfile(pointList.value, graphic);
+      }
+    };
+    
+    // 绘制剖面图
+    const drawProfile = function(points, graphic) {
+      if (points.length < 2) {
+        alert("至少需要2个点才能绘制剖面图");
+        return;
+      }
+      
+      // 计算每个点的距离
+      const distances = [];
+      let totalDistance = 0;
+      distances.push(totalDistance);
+      
+      for (let i = 1; i < points.length; i++) {
+        const dx = points[i].x - points[i-1].x;
+        const dy = points[i].y - points[i-1].y;
+        const segmentDistance = Math.sqrt(dx*dx + dy*dy);
+        totalDistance += segmentDistance;
+        distances.push(totalDistance);
+      }
+      
+      // 构建GP请求参数
+      const params = {
+        InputLineFeatures: graphic,
+        ProfileIDField: "OBJECTID",
+        DEMResolution: "FINEST"
+      };
+      
+      // 加载GP服务
+      loadModules(["esri/tasks/Geoprocessor"], option).then(([Geoprocessor]) => {
+        // 创建GP对象
+        const gp = new Geoprocessor({
+          url: "https://danxiagis.top:6443/arcgis/rest/services/DanXia/ProfileTool/GPServer/Profile%20Tool"
+        });
+        
+        // 执行GP
+        gp.submitJob(params).then(function(jobInfo) {
+          const jobId = jobInfo.jobId;
+          
+          // 检查任务状态
+          const jobCheckTimer = setInterval(function() {
+            gp.checkJobStatus(jobId).then(function(jobInfo) {
+              if (jobInfo.jobStatus === "job-succeeded") {
+                clearInterval(jobCheckTimer);
+                
+                // 获取结果
+                gp.getResultData(jobId, "OutputProfile_JSON").then(function(result) {
+                  // 处理结果
+                  const profileJson = result.value;
+                  const profileData = JSON.parse(profileJson);
+                  
+                  // 绘制图表
+                  drawChart(profileData, distances);
+                });
+              } else if (jobInfo.jobStatus === "job-failed") {
+                clearInterval(jobCheckTimer);
+                alert("剖面分析失败");
+              }
+            });
+          }, 1000);
+        }).catch(function(error) {
+          console.error("提交GP任务失败:", error);
+        });
+      });
+    };
+    
+    // 绘制图表
+    const drawChart = function(profileData, distances) {
+      // 初始化图表
+      if (!chart.value) {
+        loadModules(["esri/core/promiseUtils"], option).then(([promiseUtils]) => {
+          // 使用echarts
+          const echarts = window.echarts;
+          
+          if (echarts) {
+            chart.value = echarts.init(document.getElementById('echartDiv'));
+            
+            // 设置图表配置
+            const option = {
+              title: {
+                text: '地形剖面图',
+                left: 'center'
+              },
+              tooltip: {
+                trigger: 'axis'
+              },
+              xAxis: {
+                type: 'category',
+                name: '距离(米)',
+                data: distances
+              },
+              yAxis: {
+                type: 'value',
+                name: '高程(米)'
+              },
+              series: [{
+                name: '高程',
+                type: 'line',
+                data: profileData.map(point => point.z),
+                smooth: true
+              }]
+            };
+            
+            // 绘制图表
+            chart.value.setOption(option);
+          } else {
+            console.error("未找到echarts库");
+          }
+        });
+      } else {
+        // 更新已有图表
+        chart.value.setOption({
+          xAxis: {
+            data: distances
+          },
+          series: [{
+            data: profileData.map(point => point.z)
+          }]
+        });
+      }
+    };
+    
+    // 清除
+    const clearAll = function() {
+      // 清除图层
+      graphicsLayer.value.removeAll();
+      
+      // 移除监听器
+      if (highlighSelect.value) {
+        highlighSelect.value.remove();
+      }
+      
+      // 清除图表
+      if (chart.value) {
+        chart.value.clear();
+      }
+      
+      // 重置状态
+      pointList.value = [];
+      routeSelect.value = null;
+    };
+    
+    // 生命周期钩子
+    onMounted(() => {
+      NProgress.start();
+      _createMapView();
+    });
+    
+    onBeforeUnmount(() => {
+      // 清除所有监听器
+      if (highlighSelect.value) {
+        highlighSelect.value.remove();
+      }
+      
+      // 销毁图表
+      if (chart.value) {
+        chart.value.dispose();
+      }
+      
+      NProgress.remove();
+    });
+    
+    // 暴露给模板的内容
+    return {
+      c_flag,
+      map,
+      mapConfig,
+      graphicsLayer,
+      pointList,
+      polyline,
+      sketchViewModel,
+      lengthArray,
+      RoutesfeatureLayer,
+      highlighSelect,
+      routeSelect,
+      option,
+      chart,
+      isstudent,
+      _createMapView,
+      activedrawPolyline,
+      collectRoutes,
+      handleRouteChange,
+      drawProfile,
+      drawChart,
+      clearAll
+    };
   }
 };
 </script>

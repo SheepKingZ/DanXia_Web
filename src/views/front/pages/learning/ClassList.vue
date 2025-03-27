@@ -139,35 +139,35 @@
 </template>
 
 <script>
+import { ref, reactive, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
+
 export default {
   name: "ClassList",
+  setup() {
+    const Subject = ref([]);
+    const model = ref(1);
+    const videoitem = ref([]);
+    const currentItem = ref([]);
+    const currentClass = ref("");
+    const parentName = ref("");
+    const pptsrc = ref("");
+    const v_src = ref("");
+    const v_pic = ref("");
+    const v_title = ref("");
+    const video_flag = ref(false);
+    const AllChapter = ref([]);
+    const router = useRouter();
 
-  data() {
-    return {
-      Subject: [],
-      model: 1,
-      videoitem: [],
-      currentItem: [],
-      currentClass: "",
-      parentName: "",
-      pptsrc: "",
-      v_src: "",
-      v_pic: "",
-      v_title: "",
-      video_flag: false,
-      AllChapter: [],
-    };
-  },
-  components: {},
-  methods: {
     //获取上一页面信息
-    PassClass() {
-      this.currentClass = this.$route.params.currentClass;
-    },
+    const PassClass = () => {
+      currentClass.value = router.currentRoute.value.params.currentClass;
+    };
+
     //加载的目录
-    loadClassList() {
+    const loadClassList = () => {
       const res = JSON.parse(localStorage.getItem("meterial"));
-      console.log('res',res);
+      console.log('res', res);
       /* 章节名，去前缀 */
       for (let i = 0; i < res.length; i++) {
         let index = -1;
@@ -178,12 +178,12 @@ export default {
         }
         if (index != -1) res[i]._id = res[i]._id.slice(index + 1);
       }
-      this.AllChapter = res;
+      AllChapter.value = res;
       // 使用Set去重学科名，map是返回一个数组的方法
       let uniqueSubjects = new Set(res.map((item) => item.info[0].subject));
       // 重构Subject数组，subjectName是uniqueSubjects中的值初始化Chapter为空数组
       /* 箭头函数的简写，当想要隐式返回一个对象时，需要将对象字面量用括号()包裹起来 */
-      this.Subject = Array.from(uniqueSubjects).map((subjectName) => ({
+      Subject.value = Array.from(uniqueSubjects).map((subjectName) => ({
         Name: subjectName,
         Chapter: [],
       }));
@@ -200,7 +200,7 @@ export default {
          来指定过滤条件。这个函数检查每个元素的Name属性是否等于this.Subject.Name。
          find和filter都是数组方法，会遍历数组
          find返回数组中符合条件的第一条，filter会返回数组中符合条件的所有，返回一个数组*/
-        let subjectObj = this.Subject.find(
+        let subjectObj = Subject.value.find(
           (subj) => subj.Name === item.info[0].subject
         );
         /* 将所有满足的例子的Chapter中加入该item */
@@ -209,138 +209,105 @@ export default {
         }
       });
 
-      console.log('sub',this.Subject);
-      for (let i = 0; i < this.Subject.length; i++) {
-        if(this.Subject[i].Name==this.$route.params.currentClass)
-        { 
-
-          this.Subject[i].Chapter.sort((a, b) => {
-              return a.info[0].order - b.info[0].order ;
-            })
-          for (let j = 0; j < this.Subject[i].Chapter.length; j++) {
-            this.Subject[i].Chapter[j].info.sort((a, b) => {
-              return a.order - b.order
-            })
+      console.log('sub', Subject.value);
+      for (let i = 0; i < Subject.value.length; i++) {
+        if(Subject.value[i].Name == currentClass.value) {
+          Subject.value[i].Chapter.sort((a, b) => {
+            return a.info[0].order - b.info[0].order;
+          });
+          for (let j = 0; j < Subject.value[i].Chapter.length; j++) {
+            Subject.value[i].Chapter[j].info.sort((a, b) => {
+              return a.order - b.order;
+            });
+          }
         }
-        }
-        
       }
-    },
+    };
 
-    // loadList(){
-    //   axios({
-    //     method: "get",
-    //     // url: "http://danxiagis.top:3000/uploadDataTest/get",
-    //   }).then((res) => {
-    //    console.log(res.data)
-    //    const resdata = res.data;
-    //    const chaptern = [];
-    //    const chapterName = [];
-    //    for(let i=0;i<resdata.length;i++){
-
-    //     const dataInfo = resdata[i].info;
-    //      console.log(dataInfo)
-    //      this.ChapterItem = [];
-    //       for(let j = 0; j < dataInfo.length; j++){
-    //         // console.log(dataInfo[j])
-    //       const childItem = {
-    //                       title: dataInfo[j].topic,
-    //                       pdf: dataInfo[j].pdf,
-    //                       chapter: dataInfo[j].chapter,
-    //                     };
-    //                 this.ChapterItem.push(childItem);
-
-    //       chaptern.push(dataInfo[j].chapter);
-    //       }
-
-    //       const item = {
-    //           action: "mdi-ticket",
-    //           items: this.ChapterItem,
-    //           title: resdata[i]._id,
-    //           // subject: dataInfo[0].subject,
-    //         };
-    //         this.sItems.push(item);
-    //    }
-    //        console.log(1)
-    //        console.log(this.sItems)
-
-    //     for(let a=0;a<chaptern.length;a++){
-    //       for(let b=a+1;b<chaptern.length;b++){
-    //       if(chaptern[a]==chaptern[b]){
-    //        b=++a;
-    //       }
-    //       }
-    //       chapterName.push(chaptern[a])
-    //       }
-    //    console.log(chapterName)
-
-    //   }
-    //   )
-    // },
     //PPT点击跳转事件
-    routeto(event) {
+    const routeto = (event) => {
       //先获取当前点击事件的name，查找相应psrc地址
-
       const currentName = event.currentTarget.innerText;
 
-      for (let i = 0; i < this.AllChapter.length; i++) {
-        for (let j = 0; j < this.AllChapter[i].info.length; j++)
-          if (currentName == this.AllChapter[i].info[j].topic) {
-            this.parentName = this.AllChapter[i].info[j].chapter;
-            this.pptsrc = this.AllChapter[i].info[j].pdf;
-            this.currentClass = this.AllChapter[i].info[j].subject;
-            this.currentItem = {
-              ppt: this.pptsrc,
+      for (let i = 0; i < AllChapter.value.length; i++) {
+        for (let j = 0; j < AllChapter.value[i].info.length; j++)
+          if (currentName == AllChapter.value[i].info[j].topic) {
+            parentName.value = AllChapter.value[i].info[j].chapter;
+            pptsrc.value = AllChapter.value[i].info[j].pdf;
+            currentClass.value = AllChapter.value[i].info[j].subject;
+            currentItem.value = {
+              ppt: pptsrc.value,
               text: currentName,
             };
           }
       }
-      this.$router.push({
+      router.push({
         name: 'Class',
         params: {
           currentName: currentName,
-          parentName: this.parentName,
-          pptsrc: this.pptsrc,
-          currentItem: this.currentItem,
-          currentClass: this.currentClass,
+          parentName: parentName.value,
+          pptsrc: pptsrc.value,
+          currentItem: currentItem.value,
+          currentClass: currentClass.value,
         },
       });
-    },
+    };
+
     //视频跳转页面
-    videoto(event) {
+    const videoto = (event) => {
       const v_name = event.currentTarget.innerText;
       // console.log(v_name);
       // console.log(this.videoitem);
-      for (let b = 0; b < this.videoitem.length; b++) {
-        const vit = this.videoitem[b];
+      for (let b = 0; b < videoitem.value.length; b++) {
+        const vit = videoitem.value[b];
         if (v_name == vit.title) {
-          this.v_src = vit.video;
+          v_src.value = vit.video;
         }
       }
-      this.$router.push({
+      router.push({
         name: "video",
         params: {
           v_name: v_name,
-          v_src: this.v_src,
-          currentClass: this.currentClass,
+          v_src: v_src.value,
+          currentClass: currentClass.value,
         },
       });
-    },
-  },
-  mounted() {
-    // 展示
-    localStorage.removeItem('ZT');
-    localStorage.removeItem('NR');
-    localStorage.removeItem('src');
-    this.PassClass();
-    this.loadClassList();
-    // this.loadList();
-  },
-  computed: {
-    filteredSubject() {
+    };
+
+    onMounted(() => {
+      // 展示
+      localStorage.removeItem('ZT');
+      localStorage.removeItem('NR');
+      localStorage.removeItem('src');
+      PassClass();
+      loadClassList();
+      // this.loadList();
+    });
+
+    const filteredSubject = computed(() => {
       // 使用this.currentClass来过滤Subject数组
-      return this.Subject.filter((c1) => c1.Name === this.currentClass);
-    },
+      return Subject.value.filter((c1) => c1.Name === currentClass.value);
+    });
+
+    return {
+      Subject,
+      model,
+      videoitem,
+      currentItem,
+      currentClass,
+      parentName,
+      pptsrc,
+      v_src,
+      v_pic,
+      v_title,
+      video_flag,
+      AllChapter,
+      PassClass,
+      loadClassList,
+      routeto,
+      videoto,
+      filteredSubject,
+    };
   },
 };
 </script>
