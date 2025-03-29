@@ -15,14 +15,9 @@ import { defineAsyncComponent } from 'vue';
 
 export default {
   name: "App",
-  setup() {
-    const AppBar = defineAsyncComponent(() => import("@/components/layout/appbar.vue"));
-    const Footer = defineAsyncComponent(() => import("@/components/layout/footer.vue"));
-    
-    return {
-      AppBar,
-      Footer
-    };
+  components: {
+    AppBar: defineAsyncComponent(() => import("@/components/layout/appbar.vue")),
+    Footer: defineAsyncComponent(() => import("@/components/layout/footer.vue"))
   }
 };
 </script>

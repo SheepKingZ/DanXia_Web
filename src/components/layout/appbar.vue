@@ -54,11 +54,9 @@
             <v-menu offset-y open-on-hover>
               <template #activator="{ props }">
                 <v-btn
-                  color="primary"
-                  dark
+                  variant="text"
+                  class="ml-3 text-capitalize menu-btn white--text"
                   v-bind="props"
-                  class="ml-3 text-capitalize"
-                  depressed
                   large
                 >
                   路线学习
@@ -80,11 +78,9 @@
             <v-menu offset-y open-on-hover>
               <template #activator="{ props }">
                 <v-btn
-                  color="primary"
-                  dark
+                  variant="text"
+                  class="ml-3 text-capitalize menu-btn white--text"
                   v-bind="props"
-                  class="ml-3 text-capitalize"
-                  depressed
                   large
                   v-show="isuser"
                 >
@@ -107,11 +103,9 @@
             <v-menu offset-y open-on-hover>
               <template #activator="{ props }">
                 <v-btn
-                  color="primary"
-                  dark
+                  variant="text"
+                  class="ml-3 text-capitalize menu-btn white--text"
                   v-bind="props"
-                  class="ml-3 text-capitalize"
-                  depressed
                   large
                 >
                   分析工具
@@ -133,11 +127,9 @@
             <v-menu offset-y open-on-hover>
               <template #activator="{ props }">
                 <v-btn
-                  color="primary"
-                  dark
+                  variant="text"
+                  class="ml-3 text-capitalize menu-btn white--text"
                   v-bind="props"
-                  class="ml-3 text-capitalize"
-                  depressed
                   large
                   v-show="isstudent"
                 >
@@ -160,11 +152,9 @@
             <v-menu offset-y open-on-hover>
               <template #activator="{ props }">
                 <v-btn
-                  color="primary"
-                  dark
+                  variant="text"
+                  class="ml-3 text-capitalize menu-btn white--text"
                   v-bind="props"
-                  class="ml-3 text-capitalize"
-                  depressed
                   large
                   v-show="isteacher"
                 >
@@ -189,11 +179,9 @@
             <v-menu offset-y open-on-hover>
               <template #activator="{ props }">
                 <v-btn
-                  color="primary"
-                  dark
+                  variant="text"
+                  class="ml-3 text-capitalize menu-btn white--text"
                   v-bind="props"
-                  class="ml-3 text-capitalize"
-                  depressed
                   large
                 >
                   <v-icon left>mdi-account</v-icon>
@@ -402,5 +390,24 @@ export default {
 .appbar {
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
+}
+
+/* 确保按钮文本颜色可见 */
+.v-btn.text-capitalize {
+  color: white !important;
+}
+.v-list-item-title {
+  color: black !important;
+}
+
+/* 菜单按钮样式 */
+.menu-btn {
+  color: white !important;
+  font-weight: 500;
+  font-size: 16px;
+  background-color: transparent;
+  height: 48px !important;
+  letter-spacing: 0.5px;
+  text-transform: none;
 }
 </style>
