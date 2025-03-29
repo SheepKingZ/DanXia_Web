@@ -42,8 +42,9 @@
               <v-img
                 src="../../assets/图片1.png"
                 dark
-                class="ml-1"
-                height="56px"
+                class="ml-1 fixed-logo"
+                :width="56"
+                :height="56"
                 :contain="true"
                 title="返回首页"
               ></v-img>
@@ -404,14 +405,24 @@ export default {
   color: black !important;
 }
 
-/* 菜单按钮样式 */
+/* 菜单按钮样式 - 减小字体大小 */
 .menu-btn {
   color: white !important;
   font-weight: 500;
-  font-size: 16px;
+  font-size: 14px; /* 从16px减小到14px */
   background-color: transparent;
   height: 48px !important;
   letter-spacing: 0.5px;
   text-transform: none;
+}
+
+/* 添加固定尺寸图标样式 */
+.fixed-logo {
+  min-width: 56px !important;
+  min-height: 56px !important;
+  width: 56px !important;
+  height: 56px !important;
+  flex-shrink: 0 !important;
+  object-fit: contain;
 }
 </style>

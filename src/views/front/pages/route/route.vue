@@ -1,27 +1,29 @@
 <template>
-  <v-card tile style="height: 100%;">
-    <v-row justify="space-between" no-gutters>
+  <div class="route-container">
+    <v-row no-gutters class="fill-height">
       <!-- 点列表 -->
-      <v-col md="auto" style="height: 100%;">
+      <v-col cols="auto" class="h-100">
         <v-navigation-drawer
           v-model="drawer"
           v-model:mini-variant="mini"
           permanent
-          
+          class="elevation-3 h-100"
+          :rail-width="56"
         >
-          <v-divider></v-divider>
-          <v-list-item class="px-4">
-            <v-list-item-title>实习点</v-list-item-title>
+          <v-list-item class="px-2">
+            <v-list-item-title class="text-h6">实习点</v-list-item-title>
 
             <v-btn icon @click.stop="mini = !mini">
               <v-icon>mdi-chevron-left</v-icon>
             </v-btn>
           </v-list-item>
 
-          <v-list flat class="drawer-content">
+          <v-divider></v-divider>
+
+          <v-list dense nav class="drawer-content py-0">
             <v-list-group no-action>
               <template #activator="{ props }">
-                <v-list-item v-bind="props">
+                <v-list-item v-bind="props" prepend-icon="mdi-map-marker-path">
                   <v-list-item-title>阳元山-通泰桥路线</v-list-item-title>
                 </v-list-item>
               </template>
@@ -31,13 +33,18 @@
                 :key="i"
                 link
                 @click="onListClickHandler"
+                class="location-item"
               >
+                <template #prepend>
+                  <v-icon size="small">mdi-map-marker</v-icon>
+                </template>
                 <v-list-item-title v-text="item"></v-list-item-title>
               </v-list-item>
             </v-list-group>
+            
             <v-list-group no-action>
               <template #activator="{ props }">
-                <v-list-item v-bind="props">
+                <v-list-item v-bind="props" prepend-icon="mdi-map-marker-path">
                   <v-list-item-title>锦石岩-长老峰路线</v-list-item-title>
                 </v-list-item>
               </template>
@@ -47,13 +54,18 @@
                 :key="i"
                 link
                 @click="onListClickHandler"
+                class="location-item"
               >
+                <template #prepend>
+                  <v-icon size="small">mdi-map-marker</v-icon>
+                </template>
                 <v-list-item-title v-text="item"></v-list-item-title>
               </v-list-item>
             </v-list-group>
+            
             <v-list-group no-action>
               <template #activator="{ props }">
-                <v-list-item v-bind="props">
+                <v-list-item v-bind="props" prepend-icon="mdi-map-marker-path">
                   <v-list-item-title>阴元石-祥龙湖路线</v-list-item-title>
                 </v-list-item>
               </template>
@@ -63,7 +75,11 @@
                 :key="i"
                 link
                 @click="onListClickHandler"
+                class="location-item"
               >
+                <template #prepend>
+                  <v-icon size="small">mdi-map-marker</v-icon>
+                </template>
                 <v-list-item-title v-text="item"></v-list-item-title>
               </v-list-item>
             </v-list-group>
@@ -71,69 +87,77 @@
         </v-navigation-drawer>
       </v-col>
 
-      <!-- 地图容器 -->
-      <v-col>
-        
-        <div id="route1">
+      <!-- 地图容器 - 占据中间主要空间 -->
+      <v-col class="pa-0 h-100 position-relative">
+        <div id="route1" class="map-container">
+          <!-- 坐标信息卡片 -->
           <div class="esri-ui-bottom-left esri-ui-corner">
-          <v-card>
-            <v-card-title>
-              点击处坐标：<span>{{ long }},{{ lat }}（wkid：4326）</span>
-            </v-card-title>
-          </v-card>
-        </div>
+            <v-card elevation="3" class="coordinate-card">
+              <v-card-title class="py-2 text-body-1">
+                点击处坐标：<span class="font-weight-medium">{{ long }}, {{ lat }}</span> (WKID: 4326)
+              </v-card-title>
+            </v-card>
+          </div>
+          
+          <!-- 底图切换控制面板 -->
           <div class="esri-ui-top-right esri-ui-corner">
-            <v-card min-width="200px" color="rgba(255, 255, 255, 0.7)">
-              <v-card-title> 底图切换</v-card-title>
-              <v-card-text>
-                <v-radio-group row mandatory v-model="selectedMapType">
+            <v-card min-width="250px" class="control-panel" elevation="3">
+              <v-card-title class="py-2 text-h6">
+                <v-icon class="mr-2">mdi-layers</v-icon>底图控制
+              </v-card-title>
+              
+              <v-card-text class="pt-0">
+                <v-radio-group row v-model="selectedMapType" density="compact">
                   <v-radio
                     label="卫星影像"
                     value="1"
                     @change="changeMapType"
+                    color="primary"
                   ></v-radio>
                   <v-radio
                     label="矢量地图"
                     value="2"
                     @change="changeMapType"
+                    color="primary"
                   ></v-radio>
                 </v-radio-group>
-                <button
-                  style="
-                    border: 2px solid black;
-                    padding: 10px 20px;
-                    margin: 5px;
-                    color: black;
-                  "
-                  @click="goDan"
-                >
-                  丹霞山
-                </button>
-                <button
-                  style="
-                    border: 2px solid black;
-                    padding: 10px 20px;
-                    margin: 5px;
-                    color: black;
-                  "
-                  @click="goMang"
-                >
-                  莽山
-                </button>
-                <button
-                  @click="goXiang"
-                  style="
-                    border: 2px solid black;
-                    padding: 10px 20px;
-                    margin: 5px;
-                    color: black;
-                  "
-                >
-                  象鼻山
-                </button>
+                
+                <div class="d-flex flex-wrap justify-space-between mt-2">
+                  <v-btn
+                    prepend-icon="mdi-map-marker"
+                    variant="outlined"
+                    class="location-btn mb-2"
+                    color="primary"
+                    @click="goDan"
+                  >
+                    丹霞山
+                  </v-btn>
+                  
+                  <v-btn
+                    prepend-icon="mdi-map-marker"
+                    variant="outlined"
+                    class="location-btn mb-2"
+                    color="success"
+                    @click="goMang"
+                  >
+                    莽山
+                  </v-btn>
+                  
+                  <v-btn
+                    prepend-icon="mdi-map-marker"
+                    variant="outlined"
+                    class="location-btn mb-2"
+                    color="info"
+                    @click="goXiang"
+                  >
+                    象鼻山
+                  </v-btn>
+                </div>
               </v-card-text>
             </v-card>
           </div>
+          
+          <!-- 十字线指示器 -->
           <div
             id="horizontalLine"
             class="esri-ui-inner-container"
@@ -145,121 +169,155 @@
             v-show="verticalLine"
           ></div>
         </div>
-      </v-col>
-      <!-- 点详情按钮 -->
-      <v-col md="auto" style="height: 100%;">
+        
+        <!-- 点详情控制按钮 - 放在地图上 -->
         <v-btn
           @click.stop="anmini = !anmini"
-          top
-          left
-          fab
+          icon="mdi-chevron-right"
           color="primary"
-          small
-        >
-          <v-icon>mdi-chevron-right</v-icon>
-        </v-btn>
+          class="detail-toggle-btn"
+          elevation="3"
+          size="small"
+        ></v-btn>
       </v-col>
-      <!-- 点详情 -->
-      <v-col md="auto">
+
+      <!-- 点详情面板 -->
+      <v-col cols="auto" class="h-100">
         <v-navigation-drawer
           v-model="andrawer"
           v-model:mini-variant="anmini"
-          mini-variant-width="0px"
           permanent
-          right
+          location="right"
+          width="360"
+          mini-variant-width="0"
+          class="elevation-3 h-100"
         >
-          <v-list-item class="px-4">
-            <div v-if="!isTeacher" style="font-size: 25px; text-align: center">
-              {{ pointTitle }}
-            </div>
-            <v-list-item-title style="font-size: 25px" v-if="isTeacher">
-              <textarea
-                style="width: 200px"
-                v-model="pointTitle"
-                @change="edit_info"
-              ></textarea>
-            </v-list-item-title>
-          </v-list-item>
-          <v-card max-width="620px" tile class="drawer-content">
+          <v-card flat class="h-100">
+            <v-card-title class="d-flex align-center py-3 px-4">
+              <v-icon color="primary" class="mr-2">mdi-information-outline</v-icon>
+              <div v-if="!isTeacher" class="text-h6 text-center flex-grow-1">
+                {{ pointTitle }}
+              </div>
+              <div v-if="isTeacher" class="flex-grow-1">
+                <v-textarea
+                  v-model="pointTitle"
+                  @change="edit_info"
+                  variant="outlined"
+                  rows="1"
+                  hide-details
+                  density="compact"
+                ></v-textarea>
+              </div>
+            </v-card-title>
+            
             <v-divider></v-divider>
-
-            <v-table>
-              <tbody>
-                <tr>
-                  <td>简介</td>
-                  <!-- class="test_box"  -->
-                  <td v-if="!isTeacher">{{ pointIntroduce }}</td>
-                  <textarea
-                    v-if="isTeacher"
-                    @change="edit_info"
-                    v-model="pointIntroduce"
-                    style="height: 200px"
-                  ></textarea>
-                  <!-- <div contenteditable="true" v-if="isTeacher" @change="edit_info">{{ pointIntroduce }}</div>  -->
-                </tr>
-                <tr v-for="item in desserts" :key="item.name">
-                  <td>{{ item.name }}</td>
-                  <td>{{ item.calories }}</td>
-                </tr>
-              </tbody>
-            </v-table>
-            <v-slide-group
-              v-model="model"
-              class="pa-4"
-              center-active
-              show-arrows
-            >
-              <v-slide-group-item
-                v-for="(item, i) in pointItems"
-                :key="i"
-                v-slot="{ isSelected, toggle }"
-              >
-                <img
-                  v-lazy="item.src"
-                  class="ma-4"
-                  height="100"
-                  width="150"
-                  @click="
-                    toggle();
-                    clickLocation(i);
-                  "
-                />
-              </v-slide-group-item>
-            </v-slide-group>
-
-            <div class="video">
-              <div v-if="srcvideo === ''"></div>
-              <video-player
-                v-else
-                ref="videoPlayer"
-                class="video-player vjs-custom-skin"
-                :playsinline="true"
-                :options="playerOptions"
-                @play="onPlayerPlay"
-                @pause="onPlayerPause"
-              >
-              </video-player>
+            
+            <div class="drawer-content pa-2">
+              <!-- 点介绍和属性信息 -->
+              <v-expansion-panels variant="accordion">
+                <v-expansion-panel expanded>
+                  <v-expansion-panel-title>
+                    简介与基本信息
+                  </v-expansion-panel-title>
+                  <v-expansion-panel-text>
+                    <div class="py-2">
+                      <div class="text-subtitle-1 font-weight-bold mb-2">简介</div>
+                      <div v-if="!isTeacher" class="text-body-2">{{ pointIntroduce }}</div>
+                      <v-textarea
+                        v-if="isTeacher"
+                        @change="edit_info"
+                        v-model="pointIntroduce"
+                        rows="4"
+                        variant="outlined"
+                        hide-details
+                      ></v-textarea>
+                    </div>
+                    
+                    <v-table density="compact" class="mt-2">
+                      <tbody>
+                        <tr v-for="item in desserts" :key="item.name">
+                          <td width="30%" class="font-weight-medium">{{ item.name }}</td>
+                          <td>{{ item.calories }}</td>
+                        </tr>
+                      </tbody>
+                    </v-table>
+                  </v-expansion-panel-text>
+                </v-expansion-panel>
+              </v-expansion-panels>
+              
+              <!-- 图片轮播 -->
+              <v-card flat class="mt-3">
+                <v-card-subtitle class="pb-0 pt-2">
+                  <v-icon size="small" class="mr-1">mdi-image-multiple</v-icon>
+                  图片资料
+                </v-card-subtitle>
+                <v-slide-group
+                  v-model="model"
+                  class="pa-2"
+                  center-active
+                  show-arrows
+                >
+                  <v-slide-group-item
+                    v-for="(item, i) in pointItems"
+                    :key="i"
+                    v-slot="{ isSelected, toggle }"
+                  >
+                    <v-card
+                      :color="isSelected ? 'primary' : undefined"
+                      class="ma-1"
+                      width="150"
+                      height="100"
+                      @click="toggle(); clickLocation(i);"
+                    >
+                      <v-img
+                        v-lazy="item.src"
+                        height="100"
+                        cover
+                        class="rounded"
+                      ></v-img>
+                    </v-card>
+                  </v-slide-group-item>
+                </v-slide-group>
+              </v-card>
+              
+              <!-- 视频播放器 -->
+              <v-card flat class="mt-3" v-if="srcvideo">
+                <v-card-subtitle class="pb-0 pt-2">
+                  <v-icon size="small" class="mr-1">mdi-video</v-icon>
+                  视频资料
+                </v-card-subtitle>
+                <div class="pa-2">
+                  <video-player
+                    ref="videoPlayer"
+                    class="video-player vjs-custom-skin rounded"
+                    :playsinline="true"
+                    :options="playerOptions"
+                    @play="onPlayerPlay"
+                    @pause="onPlayerPause"
+                  >
+                  </video-player>
+                </div>
+              </v-card>
             </div>
           </v-card>
         </v-navigation-drawer>
       </v-col>
     </v-row>
-    <!-- 图片放大 -->
-    <template>
-      <div>
-        <viewer
-          ref="viewer"
-          :images="pointItems"
-          @inited="inited"
-          style="display: none"
-          v-if="viewer1"
-          rebuild
-        >
-          <img v-for="(pic, index) in pointItems" :key="index" :src="pic.src" />
-        </viewer>
-      </div>
-    </template>
-  </v-card>
+    
+    <!-- 图片放大查看器 -->
+    <div>
+      <viewer
+        ref="viewer"
+        :images="pointItems"
+        @inited="inited"
+        style="display: none"
+        v-if="viewer1"
+        rebuild
+      >
+        <img v-for="(pic, index) in pointItems" :key="index" :src="pic.src" />
+      </viewer>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -953,22 +1011,63 @@ export default {
 </script>
 
 <style scoped>
-#route1 {
-  height: calc(100vh - 50px);
+.route-container {
   width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.fill-height {
+  height: 100%;
+  width: 100%;
+}
+
+.h-100 {
+  height: 100%;
+}
+
+.position-relative {
   position: relative;
 }
-.fab-container {
-  position: fixed;
-  bottom: 0;
-  right: 0;
+
+.map-container {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  min-height: calc(100vh - 64px); /* 减去可能的头部高度 */
 }
+
+.coordinate-card {
+  background-color: rgba(255, 255, 255, 0.9);
+  max-width: 350px;
+}
+
+.control-panel {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.location-btn {
+  min-width: 100px;
+  flex-basis: 31%;
+}
+
+.detail-toggle-btn {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
 #horizontalLine {
   height: 2px;
   background: linear-gradient(
     to right,
-    #90d5eb,
-    #8bcbe0 7.5px,
+    #4caf50,
+    #4caf50 7.5px,
     transparent 7.5px,
     transparent
   );
@@ -976,13 +1075,15 @@ export default {
   width: 100%;
   position: absolute;
   top: 50%;
+  z-index: 999;
 }
+
 #verticalLine {
   width: 2px;
   background: linear-gradient(
     to bottom,
-    #90d5eb,
-    #8bcbe0 7.5px,
+    #4caf50,
+    #4caf50 7.5px,
     transparent 7.5px,
     transparent
   );
@@ -990,16 +1091,32 @@ export default {
   height: 100%;
   position: absolute;
   left: 50%;
+  z-index: 999;
 }
-#fabId {
-  /* top: -180px;
-  position: absolute;
-  left: 2210px; */
-  margin-top: -330px;
-  margin-left: 1635px;
-}
+
 .drawer-content {
-  max-height: 100vh; /* 视口高度 */
-  overflow-y: auto; /* 内容超出时允许垂直滚动 */
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+}
+
+.location-item {
+  transition: background-color 0.2s;
+}
+
+.location-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* 确保视频播放器响应式适应容器 */
+.video-player {
+  width: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* 确保导航抽屉能够正确适应内容但不影响整体布局 */
+.v-navigation-drawer {
+  position: relative !important;
+  height: 100% !important;
 }
 </style>
