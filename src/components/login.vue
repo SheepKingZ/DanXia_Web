@@ -170,59 +170,15 @@ export default {
         return;
       }
       
-      // 添加学生账号本地验证
-      if (name.value === "student" && pwd.value === "123456") {
-        loading.value = true;
-        
-        // 创建模拟学生数据
-        const studentData = {
-          name: "学生测试账号",
-          Stu_id: "student",
-          Password: "123456",
-          class_name: "2023级测试班",
-          group: {
-            group_id: "test_group",
-            leader: "student",
-            members: ["学生测试账号", "组员1", "组员2"]
-          }
-        };
-        
-        // 设置所有必要的会话数据
-        sessionStorage.setItem("isvisiter", "false");
-        sessionStorage.setItem("isteacher", "false");
-        sessionStorage.setItem("userName", studentData.name);
-        sessionStorage.setItem("class_name", studentData.class_name);
-        sessionStorage.setItem("group_id", studentData.group.group_id);
-        sessionStorage.setItem("group_leader", studentData.group.leader);
-        sessionStorage.setItem("group_member", JSON.stringify(studentData.group.members));
-        sessionStorage.setItem("stu_id", studentData.Stu_id);
-        sessionStorage.setItem("password", studentData.Password);
-        sessionStorage.setItem("loginState", "true");
-        sessionStorage.setItem("is_leader", "true");
-        
-        // 存储到vuex
-        store.state.stuName = studentData.name;
-        store.commit("loginIn", studentData);
-        
-        console.log("使用学生测试账号登录成功");
-        
-        // 确保数据已保存后再跳转
-        setTimeout(() => {
-          // 去除加载效果
-          loading.value = false;
-          // 跳转到前端页面
-          router.push("/front");
-        }, 500);
-        
-        return;
-      }
+      loading.value = true;
       
-      // 添加一个本地验证的固定账号，服务器不可用时也能登录
-      // 本地管理员账号: 3admin 密码: admin123
+      // ======= 本地账号验证逻辑 =======
+      // 优先检查是否为本地管理员或测试账号，避免发送远程请求
+      // 管理员账号: 3admin/admin123
       if (name.value === "3admin" && pwd.value === "admin123") {
-        loading.value = true;
+        console.log("使用本地管理员账号登录");
         
-        // 创建模拟管理员数据，确保包含所有需要的字段
+        // 创建模拟管理员数据
         const adminData = {
           name: "管理员账号",
           teacher_id: "3admin",
@@ -238,7 +194,7 @@ export default {
           Stu_id: "3admin"
         };
         
-        // 设置所有必要的会话数据
+        // 设置所有会话数据
         sessionStorage.setItem("isvisiter", "false");
         sessionStorage.setItem("isteacher", "true");
         sessionStorage.setItem("userName", adminData.name);
@@ -255,20 +211,57 @@ export default {
         store.state.stuName = adminData.name;
         store.commit("loginIn", adminData);
         
-        console.log("使用管理员账号登录成功");
+        // 去除加载效果
+        loading.value = false;
         
-        // 确保数据已保存后再跳转
-        setTimeout(() => {
-          // 去除加载效果
-          loading.value = false;
-          // 跳转到前端页面
-          router.push("/front");
-        }, 500);
-        
+        // 跳转到前端页面
+        router.push("/front");
         return;
       }
       
-      loading.value = true;
+      // 学生账号: student/123456
+      if (name.value === "student" && pwd.value === "123456") {
+        console.log("使用本地学生账号登录");
+        
+        // 创建模拟学生数据
+        const studentData = {
+          name: "学生测试账号",
+          Stu_id: "student",
+          Password: "123456",
+          class_name: "2023级测试班",
+          group: {
+            group_id: "test_group",
+            leader: "student",
+            members: ["学生测试账号", "组员1", "组员2"]
+          }
+        };
+        
+        // 设置所有会话数据
+        sessionStorage.setItem("isvisiter", "false");
+        sessionStorage.setItem("isteacher", "false");
+        sessionStorage.setItem("userName", studentData.name);
+        sessionStorage.setItem("class_name", studentData.class_name);
+        sessionStorage.setItem("group_id", studentData.group.group_id);
+        sessionStorage.setItem("group_leader", studentData.group.leader);
+        sessionStorage.setItem("group_member", JSON.stringify(studentData.group.members));
+        sessionStorage.setItem("stu_id", studentData.Stu_id);
+        sessionStorage.setItem("password", studentData.Password);
+        sessionStorage.setItem("loginState", "true");
+        sessionStorage.setItem("is_leader", "true");
+        
+        // 存储到vuex
+        store.state.stuName = studentData.name;
+        store.commit("loginIn", studentData);
+        
+        // 去除加载效果
+        loading.value = false;
+        
+        // 跳转到前端页面
+        router.push("/front");
+        return;
+      }
+      
+      // ======= 远程账号验证逻辑 =======
       // 第一个数字判断是不是老师，3是老师
       let f = name.value.substring(0, 1);
       //  教师和学生端判断
@@ -496,23 +489,6 @@ export default {
           console.log("主服务器不可访问，切换到备用URL");
           refreshApiUrl();
         });
-        
-      // 从URL获取重定向信息
-      const urlParams = new URLSearchParams(window.location.search);
-      const redirect = urlParams.get('redirect');
-      
-      // 清除任何可能存在的错误会话状态
-      if (sessionStorage.getItem("loginState") === "false") {
-        sessionStorage.removeItem("loginState");
-      }
-      
-      // 从localStorage获取存储的凭据自动填充
-      const savedName = localStorage.getItem("name");
-      const savedPwd = localStorage.getItem("pwd");
-      if (savedName && savedPwd) {
-        name.value = savedName;
-        pwd.value = savedPwd;
-      }
     });
 
     return {

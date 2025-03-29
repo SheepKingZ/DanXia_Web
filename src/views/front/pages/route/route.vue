@@ -5,7 +5,7 @@
       <v-col md="auto" style="height: 100%;">
         <v-navigation-drawer
           v-model="drawer"
-          :mini-variant.sync="mini"
+          v-model:mini-variant="mini"
           permanent
           
         >
@@ -20,10 +20,10 @@
 
           <v-list flat class="drawer-content">
             <v-list-group no-action>
-              <template v-slot:activator>
-                <v-list-item-content>
+              <template #activator="{ props }">
+                <v-list-item v-bind="props">
                   <v-list-item-title>阳元山-通泰桥路线</v-list-item-title>
-                </v-list-item-content>
+                </v-list-item>
               </template>
 
               <v-list-item
@@ -36,10 +36,10 @@
               </v-list-item>
             </v-list-group>
             <v-list-group no-action>
-              <template v-slot:activator>
-                <v-list-item-content>
+              <template #activator="{ props }">
+                <v-list-item v-bind="props">
                   <v-list-item-title>锦石岩-长老峰路线</v-list-item-title>
-                </v-list-item-content>
+                </v-list-item>
               </template>
 
               <v-list-item
@@ -52,10 +52,10 @@
               </v-list-item>
             </v-list-group>
             <v-list-group no-action>
-              <template v-slot:activator>
-                <v-list-item-content>
+              <template #activator="{ props }">
+                <v-list-item v-bind="props">
                   <v-list-item-title>阴元石-祥龙湖路线</v-list-item-title>
-                </v-list-item-content>
+                </v-list-item>
               </template>
 
               <v-list-item
@@ -163,7 +163,7 @@
       <v-col md="auto">
         <v-navigation-drawer
           v-model="andrawer"
-          :mini-variant.sync="anmini"
+          v-model:mini-variant="anmini"
           mini-variant-width="0px"
           permanent
           right
@@ -183,38 +183,36 @@
           <v-card max-width="620px" tile class="drawer-content">
             <v-divider></v-divider>
 
-            <v-simple-table>
-              <template v-slot:default>
-                <tbody>
-                  <tr>
-                    <td>简介</td>
-                    <!-- class="test_box"  -->
-                    <td v-if="!isTeacher">{{ pointIntroduce }}</td>
-                    <textarea
-                      v-if="isTeacher"
-                      @change="edit_info"
-                      v-model="pointIntroduce"
-                      style="height: 200px"
-                    ></textarea>
-                    <!-- <div contenteditable="true" v-if="isTeacher" @change="edit_info">{{ pointIntroduce }}</div>  -->
-                  </tr>
-                  <tr v-for="item in desserts" :key="item.name">
-                    <td>{{ item.name }}</td>
-                    <td>{{ item.calories }}</td>
-                  </tr>
-                </tbody>
-              </template>
-            </v-simple-table>
+            <v-table>
+              <tbody>
+                <tr>
+                  <td>简介</td>
+                  <!-- class="test_box"  -->
+                  <td v-if="!isTeacher">{{ pointIntroduce }}</td>
+                  <textarea
+                    v-if="isTeacher"
+                    @change="edit_info"
+                    v-model="pointIntroduce"
+                    style="height: 200px"
+                  ></textarea>
+                  <!-- <div contenteditable="true" v-if="isTeacher" @change="edit_info">{{ pointIntroduce }}</div>  -->
+                </tr>
+                <tr v-for="item in desserts" :key="item.name">
+                  <td>{{ item.name }}</td>
+                  <td>{{ item.calories }}</td>
+                </tr>
+              </tbody>
+            </v-table>
             <v-slide-group
               v-model="model"
               class="pa-4"
               center-active
               show-arrows
             >
-              <v-slide-item
+              <v-slide-group-item
                 v-for="(item, i) in pointItems"
                 :key="i"
-                v-slot="{ toggle }"
+                v-slot="{ isSelected, toggle }"
               >
                 <img
                   v-lazy="item.src"
@@ -222,11 +220,11 @@
                   height="100"
                   width="150"
                   @click="
-                    toggle;
+                    toggle();
                     clickLocation(i);
                   "
                 />
-              </v-slide-item>
+              </v-slide-group-item>
             </v-slide-group>
 
             <div class="video">
@@ -237,9 +235,10 @@
                 class="video-player vjs-custom-skin"
                 :playsinline="true"
                 :options="playerOptions"
-                @play="onPlayerPlay($event)"
-                @pause="onPlayerPause($event)"
-              />
+                @play="onPlayerPlay"
+                @pause="onPlayerPause"
+              >
+              </video-player>
             </div>
           </v-card>
         </v-navigation-drawer>
@@ -268,10 +267,14 @@ import { loadModules } from "esri-loader";
 import axios from "axios";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, nextTick } from 'vue';
+import { VideoPlayer } from 'vue-video-player';
 
 export default {
   name: "Home",
+  components: {
+    'video-player': VideoPlayer
+  },
   setup() {
     const isTeacher = ref(sessionStorage.getItem("isteacher") == "true" ? true : false);
     // 路线复选框
@@ -911,7 +914,10 @@ export default {
 
     // Initialize map on component mount
     onMounted(() => {
-      createMapView(danMount.value);
+      // 使用nextTick确保DOM已更新
+      nextTick(() => {
+        createMapView(danMount.value);
+      });
     });
 
     // Return all reactive variables and methods (will add these in the next edit)

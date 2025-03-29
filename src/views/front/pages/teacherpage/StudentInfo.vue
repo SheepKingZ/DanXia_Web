@@ -9,27 +9,21 @@
                 <v-list-item-icon>
                   <v-icon>mdi-form-select</v-icon>
                 </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title>学生名单</v-list-item-title>
-                </v-list-item-content>
+                <v-list-item-title>学生名单</v-list-item-title>
               </v-list-item>
 
               <v-list-item link @click="num = '2'">
                 <v-list-item-icon>
                   <v-icon>mdi-account-group</v-icon>
                 </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title>组队名单</v-list-item-title>
-                </v-list-item-content>
+                <v-list-item-title>组队名单</v-list-item-title>
               </v-list-item>
 
               <v-list-item link @click="num = '3'">
                 <v-list-item-icon>
                   <v-icon>mdi-clipboard-edit-outline</v-icon>
                 </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title>实习报告</v-list-item-title>
-                </v-list-item-content>
+                <v-list-item-title>实习报告</v-list-item-title>
               </v-list-item>
             </v-list-item-group>
           </v-list>

@@ -16,9 +16,7 @@
                   <v-list-item-icon>
                     <v-icon>mdi-pen</v-icon>
                   </v-list-item-icon>
-                  <v-list-item-content>
-                    <v-list-item-title>课程介绍</v-list-item-title>
-                  </v-list-item-content>
+                  <v-list-item-title>课程介绍</v-list-item-title>
                 </v-list-item>
               </router-link>
               <router-link
@@ -32,9 +30,7 @@
                   <v-list-item-icon>
                     <v-icon>mdi-book</v-icon>
                   </v-list-item-icon>
-                  <v-list-item-content>
-                    <v-list-item-title>课程内容</v-list-item-title>
-                  </v-list-item-content>
+                  <v-list-item-title>课程内容</v-list-item-title>
                 </v-list-item>
               </router-link>
               <router-link
@@ -45,9 +41,7 @@
                   <v-list-item-icon>
                     <v-icon>mdi-message</v-icon>
                   </v-list-item-icon>
-                  <v-list-item-content>
-                    <v-list-item-title>讨论区</v-list-item-title>
-                  </v-list-item-content>
+                  <v-list-item-title>讨论区</v-list-item-title>
                 </v-list-item> -->
               </router-link>
             </v-list-item-group>
@@ -84,9 +78,7 @@
                   sub-group
                 >
                   <template v-slot:activator>
-                    <v-list-item-content>
-                      <v-list-item-title>{{ c2._id }}</v-list-item-title>
-                    </v-list-item-content>
+                    <v-list-item-title>{{ c2._id }}</v-list-item-title>
                   </template>
                   <!-- 第三层节名 -->
                   <v-list-item
@@ -111,9 +103,7 @@
                 v-show="video_flag"
               >
                 <template v-slot:activator>
-                  <v-list-item-content>
-                    <v-list-item-title>视频资料</v-list-item-title>
-                  </v-list-item-content>
+                  <v-list-item-title>视频资料</v-list-item-title>
                 </template>
 
                 <v-list-item

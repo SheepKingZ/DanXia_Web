@@ -10,51 +10,39 @@
                 <v-list-item-icon>
                   <v-icon>mdi-file-plus</v-icon>
                 </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title>资料上传</v-list-item-title>
-                </v-list-item-content>
+                <v-list-item-title>资料上传</v-list-item-title>
               </v-list-item>
 
               <v-list-item link @click="num = '1'">
                 <v-list-item-icon>
                   <v-icon>mdi-window-close</v-icon>
                 </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title>资料管理</v-list-item-title>
-                </v-list-item-content>
+                <v-list-item-title>资料管理</v-list-item-title>
               </v-list-item>
 
               <v-list-item link @click="num = '2'">
                 <v-list-item-icon>
                   <v-icon>mdi-file-arrow-up-down</v-icon>
                 </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title>发布考核问题</v-list-item-title>
-                </v-list-item-content>
+                <v-list-item-title>发布考核问题</v-list-item-title>
               </v-list-item>
               <!-- <v-list-item link @click="num = '5'">
                 <v-list-item-icon>
                   <v-icon>mdi-file-clock</v-icon>
                 </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title>设置实习报告截止时间</v-list-item-title>
-                </v-list-item-content>
+                <v-list-item-title>设置实习报告截止时间</v-list-item-title>
               </v-list-item> -->
               <v-list-item link @click="num = '3'">
                 <v-list-item-icon>
                   <v-icon>mdi-file-cabinet</v-icon>
                 </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title>考核题库</v-list-item-title>
-                </v-list-item-content>
+                <v-list-item-title>考核题库</v-list-item-title>
               </v-list-item>
               <v-list-item link @click="num = '4'">
                 <v-list-item-icon>
                   <v-icon>mdi-bell-badge-outline</v-icon>
                 </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title>历史通知</v-list-item-title>
-                </v-list-item-content>
+                <v-list-item-title>历史通知</v-list-item-title>
               </v-list-item>
             </v-list-item-group>
           </v-list>
@@ -306,97 +294,95 @@
                   <v-list-item>
                     <v-row>
                       <v-col cols="10">
-                        <v-list-item-content>
-                          <v-list-item-title
-                            ><b
-                              ><p
-                                style="
-                                  white-space: normal;
-                                  word-wrap: break-word;
-                                "
-                              >
-                                {{ item.title }}
-                              </p></b
-                            ></v-list-item-title
-                          >
-                          <span> 发布时间：{{ item.start.split('.')[0].replace('T'," ") }} </span>
-                          <v-btn
-                            class="ma-16"
-                            outlined
-                            color="green lighten-1"
-                            absolute
-                            right
-                            @click="qus_edit(item)"
-                            title="编辑问题"
-                          >
-                            <v-icon>mdi-pencil</v-icon>
-                          </v-btn>
+                        <v-list-item-title
+                          ><b
+                            ><p
+                              style="
+                                white-space: normal;
+                                word-wrap: break-word;
+                              "
+                            >
+                              {{ item.title }}
+                            </p></b
+                          ></v-list-item-title
+                        >
+                        <span> 发布时间：{{ item.start.split('.')[0].replace('T'," ") }} </span>
+                        <v-btn
+                          class="ma-16"
+                          outlined
+                          color="green lighten-1"
+                          absolute
+                          right
+                          @click="qus_edit(item)"
+                          title="编辑问题"
+                        >
+                          <v-icon>mdi-pencil</v-icon>
+                        </v-btn>
 
-                          <v-dialog
-                            v-model="showEditDialog"
-                            max-width="500"
-                            :retain-focus="false"
-                          >
-                            <v-card>
-                              <v-card-title class="headline"
-                                >编辑问题</v-card-title
+                        <v-dialog
+                          v-model="showEditDialog"
+                          max-width="500"
+                          :retain-focus="false"
+                        >
+                          <v-card>
+                            <v-card-title class="headline"
+                              >编辑问题</v-card-title
+                            >
+                            <v-card-text
+                              ><!--  -->
+                              <div style="border: solid">
+                                <textarea
+                                  style="
+                                    width: 100%;
+                                    height: 100%;
+                                    font-size: 20px;
+                                  "
+                                  v-model="edited_qus.title"
+                                ></textarea>
+                              </div>
+                              <div>
+                                <label>开始日期时间：</label>
+                                <input
+                                  type="datetime-local"
+                                  v-model="edited_qus.start"
+                                />
+                                <br />
+                                <label>结束日期时间：</label>
+                                <input
+                                  type="datetime-local"
+                                  v-model="edited_qus.end"
+                                />
+                              </div>
+                            </v-card-text>
+                            <v-card-actions>
+                              <v-spacer></v-spacer>
+                              <v-btn
+                                color="green darken-1"
+                                text
+                                @click="closeChanges"
+                                >关闭</v-btn
                               >
-                              <v-card-text
-                                ><!--  -->
-                                <div style="border: solid">
-                                  <textarea
-                                    style="
-                                      width: 100%;
-                                      height: 100%;
-                                      font-size: 20px;
-                                    "
-                                    v-model="edited_qus.title"
-                                  ></textarea>
-                                </div>
-                                <div>
-                                  <label>开始日期时间：</label>
-                                  <input
-                                    type="datetime-local"
-                                    v-model="edited_qus.start"
-                                  />
-                                  <br />
-                                  <label>结束日期时间：</label>
-                                  <input
-                                    type="datetime-local"
-                                    v-model="edited_qus.end"
-                                  />
-                                </div>
-                              </v-card-text>
-                              <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn
-                                  color="green darken-1"
-                                  text
-                                  @click="closeChanges"
-                                  >关闭</v-btn
-                                >
-                                <v-btn
-                                  color="green darken-1"
-                                  text
-                                  @click="saveChanges"
-                                  >保存</v-btn
-                                >
-                              </v-card-actions>
-                            </v-card>
-                          </v-dialog>
+                              <v-btn
+                                color="green darken-1"
+                                text
+                                @click="saveChanges"
+                                >保存</v-btn
+                              >
+                            </v-card-actions>
+                          </v-card>
+                        </v-dialog>
 
-                          <v-btn
-                            class="ma-0 text-end"
-                            outlined
-                            color="green lighten-1"
-                            absolute
-                            right
-                            @click="qus_to_delete(item)"
-                            title="删除问题"
-                          >
-                            <v-icon>mdi-trash-can</v-icon>
-                          </v-btn>
-                        </v-list-item-content>
+                        <v-btn
+                          class="ma-0 text-end"
+                          outlined
+                          color="green lighten-1"
+                          absolute
+                          right
+                          @click="qus_to_delete(item)"
+                          title="删除问题"
+                        >
+                          <v-icon>mdi-trash-can</v-icon>
+                        </v-btn>
                       </v-col>
                     </v-row>
                   </v-list-item>
@@ -440,47 +426,45 @@
                 <v-list-item>
                   <v-row>
                     <v-col cols="10">
-                      <v-list-item-content>
-                        <v-list-item-title>
-                          <b
-                            ><p
-                              style="white-space: normal; word-wrap: break-word"
-                            >
-                              {{ item.title }}
-                            </p></b
+                      <v-list-item-title>
+                        <b
+                          ><p
+                            style="white-space: normal; word-wrap: break-word"
                           >
-                          <v-spacer></v-spacer>
-                          近期使用时间：{{ item.used_date }}
-                          <v-spacer></v-spacer>
-                          使用次数：{{ item.used_time }}
-                          <v-spacer></v-spacer>
-                          使用年份：{{ item.used_years }}
-                        </v-list-item-title>
-
-                        <v-btn
-                          class="ma-16"
-                          outlined
-                          color="green lighten-1"
-                          absolute
-                          right
-                          @click="qus_edit1(item)"
-                          title="编辑问题"
+                            {{ item.title }}
+                          </p></b
                         >
-                          <v-icon>mdi-pencil-outline</v-icon>
-                        </v-btn>
+                        <v-spacer></v-spacer>
+                        近期使用时间：{{ item.used_date }}
+                        <v-spacer></v-spacer>
+                        使用次数：{{ item.used_time }}
+                        <v-spacer></v-spacer>
+                        使用年份：{{ item.used_years }}
+                      </v-list-item-title>
 
-                        <v-btn
-                          class="ma-0 text-end"
-                          outlined
-                          color="green lighten-1"
-                          absolute
-                          right
-                          @click="qus_to_delete1(item)"
-                          title="删除问题"
-                        >
-                          <v-icon>mdi-trash-can-outline</v-icon>
-                        </v-btn>
-                      </v-list-item-content>
+                      <v-btn
+                        class="ma-16"
+                        outlined
+                        color="green lighten-1"
+                        absolute
+                        right
+                        @click="qus_edit1(item)"
+                        title="编辑问题"
+                      >
+                        <v-icon>mdi-pencil-outline</v-icon>
+                      </v-btn>
+
+                      <v-btn
+                        class="ma-0 text-end"
+                        outlined
+                        color="green lighten-1"
+                        absolute
+                        right
+                        @click="qus_to_delete1(item)"
+                        title="删除问题"
+                      >
+                        <v-icon>mdi-trash-can-outline</v-icon>
+                      </v-btn>
                     </v-col>
                   </v-row>
                 </v-list-item>
@@ -584,34 +568,32 @@
                 <v-list-item>
                   <v-row>
                     <v-col cols="10">
-                      <v-list-item-content>
-                        <v-list-item-title>
-                          <b
-                            ><p
-                              style="white-space: normal; word-wrap: break-word"
-                            >
-                              {{ item.title }}
-                            </p></b
+                      <v-list-item-title>
+                        <b
+                          ><p
+                            style="white-space: normal; word-wrap: break-word"
                           >
-                          <v-spacer></v-spacer>
-                          近期使用时间：{{ item.used_date }}
-                          <v-spacer></v-spacer>
-                          使用次数：{{ item.used_time }}
-                          <v-spacer></v-spacer>
-                          使用年份：{{ item.used_years }}
-                        </v-list-item-title>
-                        <v-btn
-                          class="ma-0 text-end"
-                          outlined
-                          color="green lighten-1"
-                          absolute
-                          right
-                          @click="dele_notice_dia = true"
-                          title="删除通知"
+                            {{ item.title }}
+                          </p></b
                         >
-                          <v-icon>mdi-trash-can-outline</v-icon>
-                        </v-btn>
-                      </v-list-item-content>
+                        <v-spacer></v-spacer>
+                        近期使用时间：{{ item.used_date }}
+                        <v-spacer></v-spacer>
+                        使用次数：{{ item.used_time }}
+                        <v-spacer></v-spacer>
+                        使用年份：{{ item.used_years }}
+                      </v-list-item-title>
+                      <v-btn
+                        class="ma-0 text-end"
+                        outlined
+                        color="green lighten-1"
+                        absolute
+                        right
+                        @click="dele_notice_dia = true"
+                        title="删除通知"
+                      >
+                        <v-icon>mdi-trash-can-outline</v-icon>
+                      </v-btn>
                     </v-col>
                   </v-row>
                 </v-list-item>

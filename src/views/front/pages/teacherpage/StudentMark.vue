@@ -28,9 +28,7 @@
                         <v-list-item-icon>
                           <v-icon>mdi-marker-check</v-icon>
                         </v-list-item-icon>
-                        <v-list-item-content>
-                          <v-list-item-title>平时成绩</v-list-item-title>
-                        </v-list-item-content>
+                        <v-list-item-title>平时成绩</v-list-item-title>
                       </v-list-item>
                       <!--从数据库获取一次 
                     考核问题-->
@@ -44,18 +42,14 @@
                         <v-list-item-icon>
                           <v-icon>mdi-format-annotation-plus</v-icon>
                         </v-list-item-icon>
-                        <v-list-item-content>
-                          <v-list-item-title>问题考核</v-list-item-title>
-                        </v-list-item-content>
+                        <v-list-item-title>问题考核</v-list-item-title>
                       </v-list-item>
                       <!-- 实习感想 -->
                       <v-list-item link @click="num = '6'">
                         <v-list-item-icon>
                           <v-icon>mdi-thought-bubble</v-icon>
                         </v-list-item-icon>
-                        <v-list-item-content>
-                          <v-list-item-title>实习感想</v-list-item-title>
-                        </v-list-item-content>
+                        <v-list-item-title>实习感想</v-list-item-title>
                       </v-list-item>
                       <!-- 实习报告 -->
                     </div>
@@ -88,9 +82,7 @@
                         <v-list-item-icon>
                           <v-icon>mdi-view-dashboard-outline</v-icon>
                         </v-list-item-icon>
-                        <v-list-item-content>
-                          <v-list-item-title>成绩组成</v-list-item-title>
-                        </v-list-item-content>
+                        <v-list-item-title>成绩组成</v-list-item-title>
                       </v-list-item>
                       <!-- 成绩汇总 -->
                       <v-list-item
@@ -103,9 +95,7 @@
                         <v-list-item-icon>
                           <v-icon>mdi-file-sign</v-icon>
                         </v-list-item-icon>
-                        <v-list-item-content>
-                          <v-list-item-title>成绩汇总</v-list-item-title>
-                        </v-list-item-content>
+                        <v-list-item-title>成绩汇总</v-list-item-title>
                       </v-list-item>
                       <!-- 往届成绩 -->
                       <v-list-item
@@ -118,9 +108,7 @@
                         <v-list-item-icon>
                           <v-icon>mdi-folder-eye-outline</v-icon>
                         </v-list-item-icon>
-                        <v-list-item-content>
-                          <v-list-item-title>往届成绩</v-list-item-title>
-                        </v-list-item-content>
+                        <v-list-item-title>往届成绩</v-list-item-title>
                       </v-list-item>
                     </div>
                   </v-list>

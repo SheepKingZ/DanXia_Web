@@ -17,9 +17,7 @@
           :href="item.href"
           :target="item.target"
         >
-          <v-list-item-content>
-            <v-list-item-title>{{ item.text }}</v-list-item-title>
-          </v-list-item-content>
+          <v-list-item-title>{{ item.text }}</v-list-item-title>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
@@ -57,11 +55,11 @@
                   variant="text"
                   class="ml-3 text-capitalize menu-btn white--text"
                   v-bind="props"
-                  large
+                  size="large"
                 >
                   路线学习
 
-                  <v-icon right> mdi-arrow-down-circle-outline </v-icon>
+                  <v-icon end> mdi-arrow-down-circle-outline </v-icon>
                 </v-btn>
               </template>
               <v-list>
@@ -81,12 +79,12 @@
                   variant="text"
                   class="ml-3 text-capitalize menu-btn white--text"
                   v-bind="props"
-                  large
+                  size="large"
                   v-show="isuser"
                 >
                   学习资料
 
-                  <v-icon right> mdi-arrow-down-circle-outline </v-icon>
+                  <v-icon end> mdi-arrow-down-circle-outline </v-icon>
                 </v-btn>
               </template>
               <v-list>
@@ -106,11 +104,11 @@
                   variant="text"
                   class="ml-3 text-capitalize menu-btn white--text"
                   v-bind="props"
-                  large
+                  size="large"
                 >
                   分析工具
 
-                  <v-icon right> mdi-arrow-down-circle-outline </v-icon>
+                  <v-icon end> mdi-arrow-down-circle-outline </v-icon>
                 </v-btn>
               </template>
               <v-list>
@@ -130,12 +128,12 @@
                   variant="text"
                   class="ml-3 text-capitalize menu-btn white--text"
                   v-bind="props"
-                  large
+                  size="large"
                   v-show="isstudent"
                 >
                   实习报告
 
-                  <v-icon right> mdi-arrow-down-circle-outline </v-icon>
+                  <v-icon end> mdi-arrow-down-circle-outline </v-icon>
                 </v-btn>
               </template>
               <v-list>
@@ -155,12 +153,12 @@
                   variant="text"
                   class="ml-3 text-capitalize menu-btn white--text"
                   v-bind="props"
-                  large
+                  size="large"
                   v-show="isteacher"
                 >
                   教师功能
 
-                  <v-icon right> mdi-arrow-down-circle-outline </v-icon>
+                  <v-icon end> mdi-arrow-down-circle-outline </v-icon>
                 </v-btn>
               </template>
               <v-list>
@@ -182,13 +180,13 @@
                   variant="text"
                   class="ml-3 text-capitalize menu-btn white--text"
                   v-bind="props"
-                  large
+                  size="large"
                 >
-                  <v-icon left>mdi-account</v-icon>
+                  <v-icon start>mdi-account</v-icon>
 
                   {{ stuName }}
 
-                  <v-icon right v-show="visiter"> mdi-arrow-down-circle-outline </v-icon>
+                  <v-icon end v-show="visiter"> mdi-arrow-down-circle-outline </v-icon>
                 </v-btn>
               </template>
               <v-list >
@@ -213,15 +211,20 @@
 <script>
 import { ref, reactive, onMounted, computed } from 'vue';
 import { useDisplay } from 'vuetify';
+import { useStore } from 'vuex';
 
 export default {
   name: "Appbar",
   setup() {
+    const store = useStore();
     const display = useDisplay();
     
     // 使用computed获取断点值
     const mdAndUp = computed(() => display.mdAndUp.value);
     const lgAndUp = computed(() => display.lgAndUp.value);
+    
+    // 获取用户名
+    const stuName = computed(() => store.state.stuName || sessionStorage.getItem("userName") || "未登录");
     
     // 响应式状态
     const drawer = ref(false);
@@ -380,7 +383,8 @@ export default {
       personPages,
       teacherPages,
       mdAndUp,
-      lgAndUp
+      lgAndUp,
+      stuName
     };
   }
 };

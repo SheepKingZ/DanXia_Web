@@ -14,7 +14,8 @@ import vuetify from './plugins/vuetify';
 // 视频播放相关
 import Video from 'video.js'
 import 'video.js/dist/video-js.css'
-// videojs-contrib-hls 库已弃用，现代版本的video.js已内置HLS支持
+// 注册video-player组件
+import VueVideoPlayer from 'vue-video-player'
 
 // 图片查看器
 import Viewer from 'v-viewer';
@@ -43,6 +44,9 @@ app.use(Viewer, {
     zIndex: 9999 
   } 
 })
+
+// 注册视频播放组件
+app.component('video-player', VueVideoPlayer)
 
 // 视图器设置
 Viewer.setDefaults({

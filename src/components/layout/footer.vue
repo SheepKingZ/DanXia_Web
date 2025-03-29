@@ -14,7 +14,7 @@
 
           <v-col cols="12" md="2">
             <v-list flat color="transparent">
-              <v-subheader class="text-h6">往年回顾</v-subheader>
+              <v-list-subheader class="text-h6">往年回顾</v-list-subheader>
               <p>
                 <button @click="checkVideoFun">
                   2021级生态学专业自然地理学野外综合实习</button
