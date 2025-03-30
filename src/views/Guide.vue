@@ -114,7 +114,7 @@
                   <v-row align="center">
                     <v-col class="flex-grow-0">
                       <v-avatar color="primary">
-                        <v-icon large dark>mdi-airplane</v-icon>
+                        <v-icon icon="mdi-airplane"></v-icon>
                       </v-avatar>
                     </v-col>
 
@@ -134,6 +134,63 @@
                 <v-img src="../assets/重力坍塌形成陡崖.gif"></v-img
                 ><!-- https://danxiagis.top:3007/image/banner1.jpg -->
               </v-card>
+            </v-col>
+          </v-row>
+        </div>
+
+        <!-- 新增的Cesium 3D游览部分 -->
+        <div class="my-12">
+          <v-row class="py-12" justify="space-around">
+            <v-col cols="2" md="4">
+              <v-card>
+                <v-img src="../assets/陆相红层沉积.gif"></v-img>
+              </v-card>
+            </v-col>
+            <v-col cols="12" md="5">
+              <div>
+                <h3 class="text-h4 my-3">丹霞3D地形游览</h3>
+
+                <div class="grey--text text--darken-1">
+                  <h4 class="text-h6 my-3 font-weight-regular">
+                    沉浸式体验丹霞地貌3D地形
+                  </h4>
+                  <div class="my-5">
+                    <p class="font-weight-regular">
+                      使用先进的Cesium 3D技术，探索丹霞地区的精细地形。创建自定义飞行路线，从各个角度观察地貌特征，获得身临其境的地质体验。
+                    </p>
+                  </div>
+                </div>
+
+                <div class="my-12">
+                  <v-btn
+                    color="error"
+                    class="text-capitalize"
+                    large
+                    to="/front/pages/cesium3d/tour"
+                    style="animation: pulse 2s infinite;"
+                    >
+                    <v-icon icon="mdi-earth" class="mr-1"></v-icon>
+                    开始3D探索
+                  </v-btn>
+                </div>
+
+                <div class="my-12">
+                  <v-row align="center">
+                    <v-col class="flex-grow-0">
+                      <v-avatar color="error">
+                        <v-icon icon="mdi-earth"></v-icon>
+                      </v-avatar>
+                    </v-col>
+
+                    <v-col class="flex-shrink-1">
+                      <div>
+                        <h4 class="text-body-1">Created by</h4>
+                        <h3 class="subtitle font-weight-regular">DanXia</h3>
+                      </div>
+                    </v-col>
+                  </v-row>
+                </div>
+              </div>
             </v-col>
           </v-row>
         </div>
@@ -176,7 +233,7 @@
                   <v-row align="center">
                     <v-col class="flex-grow-0">
                       <v-avatar color="secondary">
-                        <v-icon large dark>mdi-book-open-page-variant</v-icon>
+                        <v-icon icon="mdi-book-open-page-variant"></v-icon>
                       </v-avatar>
                     </v-col>
 
@@ -465,5 +522,21 @@ export default {
   width: 100%;
   height: 100%;
   backface-visibility: hidden; /* 隐藏背面，使图片看起来更平滑 */
+}
+
+/* 脉动动画效果 */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7);
+    transform: scale(1);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(244, 67, 54, 0);
+    transform: scale(1.05);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
+    transform: scale(1);
+  }
 }
 </style>

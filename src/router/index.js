@@ -242,6 +242,15 @@ const routes = [
         }
        
       },
+      // 添加Cesium 3D地形游览页面路由
+      {
+        path: "/front/pages/cesium3d/tour",
+        name: "cesium3d-tour",
+        component: () => import("../views/front/pages/cesium3d/Cesium3DTour.vue"),
+        meta: {
+          auth: false
+        }
+      },
     ],
   },
   

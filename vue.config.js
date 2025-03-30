@@ -1,4 +1,7 @@
 const { VueLoaderPlugin } = require('vue-loader')
+const path = require('path');
+const webpack = require('webpack');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   lintOnSave: false,
@@ -14,11 +17,40 @@ module.exports = {
       'vuex': 'Vuex',
       'axios': 'axios',
     },
+    plugins: [
+      // 复制Cesium资源到静态目录
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: 'node_modules/cesium/Build/Cesium',
+            to: 'cesium'
+          }
+        ]
+      }),
+      // 定义Cesium基础URL
+      new webpack.DefinePlugin({
+        CESIUM_BASE_URL: JSON.stringify('cesium')
+      })
+    ],
     resolve: {
       alias: {
         'vue$': 'vue/dist/vue.esm-bundler.js' // 使用包含运行时编译器的版本
       }
-    }
+    },
+    module: {
+      // 添加对glTF内容的支持
+      rules: [
+        {
+          test: /\.(glb|gltf)$/,
+          use: {
+            loader: 'file-loader',
+            options: {
+              outputPath: 'models',
+            },
+          },
+        },
+      ],
+    },
   },
   
   chainWebpack: config => {

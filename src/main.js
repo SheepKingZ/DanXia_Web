@@ -25,6 +25,12 @@ import 'viewerjs/dist/viewer.css';
 import VueLazyload from 'vue-lazyload'
 import circle from './assets/loading.gif'
 
+// 导入Cesium的CSS样式 - 尝试不同的路径
+import 'cesium/Build/Cesium/Widgets/widgets.css';
+
+// 导入Cesium插件
+import cesiumPlugin from './plugins/cesium';
+
 const app = createApp(App)
 
 // 全局属性设置
@@ -34,6 +40,7 @@ app.config.globalProperties.$bus = app
 // 使用插件
 app.use(store)
 app.use(vuetify)
+app.use(cesiumPlugin)
 app.use(router)
 app.use(axiosPlugin)
 app.use(VueLazyload, {
