@@ -2,6 +2,38 @@
   <div class="cesium-container">
     <div id="cesiumContainer"></div>
     
+    <!-- 帮助中心 (左上角) -->
+    <div class="help-panel">
+      <div class="panel-header">
+        <h2>帮助中心</h2>
+        <v-btn icon="mdi-close" size="small" @click="toggleHelpPanel" v-if="showHelpPanel"></v-btn>
+      </div>
+      
+      <div class="panel-content" v-if="showHelpPanel">
+        <h3>操作指南</h3>
+        <ul>
+          <li>鼠标左键: 旋转视角</li>
+          <li>鼠标右键: 平移视角</li>
+          <li>滚轮: 缩放视角</li>
+          <li>双击: 定位到点击位置</li>
+        </ul>
+        <h3>功能说明</h3>
+        <ul>
+          <li>飞行路线: 沿预设或自定义路线飞行</li>
+          <li>天气系统: 模拟不同天气效果</li>
+          <li>测量工具: 测量地形距离和面积</li>
+        </ul>
+      </div>
+      
+      <v-btn 
+        v-if="!showHelpPanel" 
+        color="primary" 
+        icon="mdi-help-circle" 
+        @click="toggleHelpPanel"
+        class="help-btn"
+      ></v-btn>
+    </div>
+    
     <!-- 控制面板 -->
     <div class="control-panel">
       <div class="panel-header">
@@ -19,6 +51,87 @@
             <v-icon icon="mdi-earth" class="mr-1"></v-icon>
             {{ showTerrainDepth ? '关闭' : '开启' }}地形深度
           </v-btn>
+        </div>
+        
+        <!-- 新增天气系统控制区 --> <!-- 定义天气系统控制的容器区域 -->
+        <div class="control-section"> <!-- 创建一个带有control-section类的容器div -->
+          <h3>天气系统</h3> <!-- 显示"天气系统"作为该控制区的标题 -->
+          <v-select 
+            v-model="currentWeather" 
+            :items="weatherOptions" 
+            label="选择天气" 
+            density="compact" 
+            class="mb-2" 
+          ></v-select> <!-- 关闭v-select组件标签 -->
+          
+          <div class="d-flex align-center">
+            <span class="mr-2">时间控制:</span>
+            <v-slider
+              v-model="timeOfDay"
+              :min="0"
+              :max="24"
+              :step="0.5"
+              thumb-label="always"
+              class="time-slider"
+            ></v-slider>
+          </div>
+          
+          <v-btn color="info" class="control-btn" @click="applyWeatherEffect">
+            <v-icon icon="mdi-weather-cloudy" class="mr-1"></v-icon>
+            应用天气效果
+          </v-btn>
+        </div>
+        
+        <!-- 新增测量工具控制区 -->
+        <div class="control-section">
+          <h3>测量工具</h3>
+          <v-btn-toggle v-model="measureMode" mandatory>
+            <v-btn value="none" color="grey">
+              <v-icon icon="mdi-cursor-default" class="mr-1"></v-icon>
+              关闭
+            </v-btn>
+            <v-btn value="distance" color="blue">
+              <v-icon icon="mdi-ruler" class="mr-1"></v-icon>
+              距离
+            </v-btn>
+            <v-btn value="area" color="green">
+              <v-icon icon="mdi-vector-polygon" class="mr-1"></v-icon>
+              面积
+            </v-btn>
+          </v-btn-toggle>
+          
+          <div v-if="measureMode !== 'none'" class="text-caption mt-2">
+            点击地图添加测量点，完成后双击结束测量
+          </div>
+          
+          <div v-if="measureResult" class="mt-2">
+            <strong>测量结果:</strong> {{ measureResult }}
+          </div>
+        </div>
+        
+        <!-- 新增图层控制区 -->
+        <div class="control-section">
+          <h3>图层控制</h3>
+          <v-switch
+            v-model="showLabels"
+            color="purple"
+            label="地点标注"
+            hide-details
+            class="mb-2"
+          ></v-switch>
+          <v-switch
+            v-model="show3DBuildings"
+            color="brown"
+            label="3D建筑"
+            hide-details
+            class="mb-2"
+          ></v-switch>
+          <v-switch
+            v-model="showImagery"
+            color="teal"
+            label="卫星影像"
+            hide-details
+          ></v-switch>
         </div>
         
         <div class="control-section">
@@ -66,6 +179,14 @@
         </div>
       </div>
     </div>
+    
+    <!-- 截图按钮 -->
+    <v-btn
+      color="amber"
+      icon="mdi-camera"
+      class="screenshot-btn"
+      @click="captureScreenshot"
+    ></v-btn>
   </div>
 </template>
 
@@ -84,7 +205,25 @@ export default {
       isAddingPoints: false,
       customRoutePoints: [],
       flightEntity: null,
-      isFlying: false
+      isFlying: false,
+      
+      // 帮助面板
+      showHelpPanel: false,
+      
+      // 天气系统
+      currentWeather: 'sunny',
+      weatherOptions: ['sunny', 'cloudy', 'rainy', 'snowy', 'foggy'],
+      timeOfDay: 12, // 中午12点
+      
+      // 测量工具
+      measureMode: 'none',
+      measureEntities: [],
+      measureResult: null,
+      
+      // 图层控制
+      showLabels: true,
+      show3DBuildings: true,
+      showImagery: true
     });
 
     // 预定义的飞行路线
@@ -141,6 +280,9 @@ export default {
 
         // 创建自定义路线点击事件
         setupCustomRouteHandler();
+        
+        // 设置测量工具
+        setupMeasurementTools();
       } catch (error) {
         console.error('初始化Cesium失败:', error);
         alert('初始化3D地图失败，请刷新页面重试。');
@@ -199,6 +341,204 @@ export default {
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
       } catch (error) {
         console.error('设置自定义路线处理失败:', error);
+      }
+    };
+
+    // 帮助面板切换
+    const toggleHelpPanel = () => {
+      state.showHelpPanel = !state.showHelpPanel;
+    };
+    
+    // 应用天气效果
+    const applyWeatherEffect = () => {
+      if (!state.viewer) return;
+      
+      try {
+        // 清除现有天气效果
+        state.viewer.scene.fog.enabled = false;
+        state.viewer.scene.fog.density = 0.0;
+        state.viewer.scene.skyAtmosphere.hueShift = 0.0;
+        state.viewer.scene.skyAtmosphere.saturationShift = 0.0;
+        state.viewer.scene.skyAtmosphere.brightnessShift = 0.0;
+        
+        // 设置时间
+        const hour = Math.floor(state.timeOfDay);
+        const minute = (state.timeOfDay - hour) * 60;
+        const julianDate = new Cesium.JulianDate();
+        const currentDate = new Date();
+        
+        julianDate.dayNumber = Cesium.JulianDate.fromDate(new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDate(),
+          hour,
+          minute
+        )).dayNumber;
+        
+        state.viewer.clock.currentTime = julianDate;
+        
+        // 应用选择的天气效果
+        switch (state.currentWeather) {
+          case 'foggy':
+            state.viewer.scene.fog.enabled = true;
+            state.viewer.scene.fog.density = 0.001;
+            state.viewer.scene.skyAtmosphere.brightnessShift = -0.3;
+            break;
+          case 'cloudy':
+            state.viewer.scene.skyAtmosphere.hueShift = 0.0;
+            state.viewer.scene.skyAtmosphere.saturationShift = -0.5;
+            state.viewer.scene.skyAtmosphere.brightnessShift = -0.2;
+            break;
+          case 'rainy':
+            state.viewer.scene.fog.enabled = true;
+            state.viewer.scene.fog.density = 0.0007;
+            state.viewer.scene.skyAtmosphere.brightnessShift = -0.3;
+            state.viewer.scene.skyAtmosphere.saturationShift = -0.4;
+            break;
+          case 'snowy':
+            state.viewer.scene.fog.enabled = true;
+            state.viewer.scene.fog.density = 0.0005;
+            state.viewer.scene.skyAtmosphere.brightnessShift = 0.3;
+            state.viewer.scene.skyAtmosphere.saturationShift = -0.4;
+            break;
+          case 'sunny':
+          default:
+            state.viewer.scene.skyAtmosphere.hueShift = 0.0;
+            state.viewer.scene.skyAtmosphere.saturationShift = 0.0;
+            state.viewer.scene.skyAtmosphere.brightnessShift = 0.0;
+            break;
+        }
+      } catch (error) {
+        console.error('应用天气效果失败:', error);
+      }
+    };
+    
+    // 设置测量工具
+    const setupMeasurementTools = () => {
+      if (!state.viewer) return;
+      
+      try {
+        let activePoints = [];
+        let activeEntities = [];
+        
+        // 设置点击事件
+        state.viewer.screenSpaceEventHandler.setInputAction((click) => {
+          if (state.measureMode === 'none') return;
+          
+          const cartesian = state.viewer.camera.pickEllipsoid(
+            click.position, 
+            state.viewer.scene.globe.ellipsoid
+          );
+          
+          if (cartesian) {
+            // 添加点实体
+            const pointEntity = state.viewer.entities.add({
+              position: cartesian,
+              point: {
+                pixelSize: 8,
+                color: state.measureMode === 'distance' ? Cesium.Color.BLUE : Cesium.Color.GREEN,
+                outlineColor: Cesium.Color.WHITE,
+                outlineWidth: 2
+              }
+            });
+            
+            activePoints.push(cartesian);
+            activeEntities.push(pointEntity);
+            
+            // 如果存在前一个点，添加连线
+            if (activePoints.length > 1) {
+              const lineEntity = state.viewer.entities.add({
+                polyline: {
+                  positions: [activePoints[activePoints.length - 2], activePoints[activePoints.length - 1]],
+                  width: 3,
+                  material: state.measureMode === 'distance' ? Cesium.Color.BLUE : Cesium.Color.GREEN
+                }
+              });
+              activeEntities.push(lineEntity);
+              
+              // 计算距离
+              if (state.measureMode === 'distance') {
+                const distance = Cesium.Cartesian3.distance(
+                  activePoints[activePoints.length - 2], 
+                  activePoints[activePoints.length - 1]
+                );
+                state.measureResult = `距离: ${(distance / 1000).toFixed(2)} 公里`;
+              }
+            }
+            
+            // 面积测量 - 如果有3个以上的点，绘制多边形
+            if (state.measureMode === 'area' && activePoints.length > 2) {
+              // 删除旧的多边形（如果有）
+              activeEntities = activeEntities.filter(entity => {
+                if (entity.polygon) {
+                  state.viewer.entities.remove(entity);
+                  return false;
+                }
+                return true;
+              });
+              
+              // 添加新的多边形
+              const polygonEntity = state.viewer.entities.add({
+                polygon: {
+                  hierarchy: new Cesium.PolygonHierarchy(activePoints),
+                  material: Cesium.Color.GREEN.withAlpha(0.5),
+                  outline: true,
+                  outlineColor: Cesium.Color.GREEN
+                }
+              });
+              activeEntities.push(polygonEntity);
+              
+              // 计算多边形面积（简化计算，实际应用中应考虑地球椭球体）
+              const positions = activePoints.map(point => {
+                const cartographic = Cesium.Cartographic.fromCartesian(point);
+                return {
+                  lon: Cesium.Math.toDegrees(cartographic.longitude),
+                  lat: Cesium.Math.toDegrees(cartographic.latitude)
+                };
+              });
+              
+              // 使用平面近似计算面积
+              let area = 0;
+              for (let i = 0; i < positions.length; i++) {
+                const j = (i + 1) % positions.length;
+                area += positions[i].lon * positions[j].lat;
+                area -= positions[j].lon * positions[i].lat;
+              }
+              area = Math.abs(area) * 111319.9 * 111319.9 / 2; // 简化计算，1度约等于111.32公里
+              
+              state.measureResult = `面积: ${(area / 1000000).toFixed(2)} 平方公里`;
+            }
+          }
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+        
+        // 双击完成测量
+        state.viewer.screenSpaceEventHandler.setInputAction(() => {
+          if (state.measureMode === 'none' || activePoints.length < 2) return;
+          
+          // 保存测量实体
+          state.measureEntities = [...state.measureEntities, ...activeEntities];
+          
+          // 重置活动点
+          activePoints = [];
+          activeEntities = [];
+        }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+      } catch (error) {
+        console.error('设置测量工具失败:', error);
+      }
+    };
+    
+    // 截图功能
+    const captureScreenshot = () => {
+      if (!state.viewer) return;
+      
+      try {
+        const canvas = state.viewer.canvas;
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = `丹霞地貌_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.png`;
+        link.click();
+      } catch (error) {
+        console.error('截图失败:', error);
       }
     };
 
@@ -358,7 +698,10 @@ export default {
       toggleTerrainDepth,
       startFlight,
       stopFlight,
-      clearCustomRoute
+      clearCustomRoute,
+      toggleHelpPanel,
+      applyWeatherEffect,
+      captureScreenshot
     };
   }
 };
@@ -391,16 +734,47 @@ export default {
   overflow: hidden;
 }
 
+/* 帮助中心面板 */
+.help-panel {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 280px;
+  background-color: rgba(255, 255, 255, 0.85);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 999;
+  overflow: hidden;
+}
+
+.help-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 999;
+}
+
 .panel-header {
   background-color: #3f51b5;
   color: white;
   padding: 12px 16px;
   text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
 }
 
 .panel-header h2 {
   margin: 0;
   font-size: 1.4rem;
+}
+
+.panel-header .v-btn {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .panel-content {
@@ -428,5 +802,18 @@ export default {
 .control-btn {
   margin-right: 8px;
   margin-bottom: 8px;
+}
+
+/* 截图按钮样式 */
+.screenshot-btn {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  z-index: 999;
+}
+
+/* 时间滑块样式 */
+.time-slider {
+  width: 200px;
 }
 </style> 
