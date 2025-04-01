@@ -1,78 +1,86 @@
 /* import Vue from 'vue'//用cdn的时候要注释掉 */
 /* global Vue */
+
+// 导入Vue 3的createApp函数，用于创建Vue应用实例
 import { createApp } from 'vue'
+// 导入根组件App
 import App from './App.vue'
+// 导入路由配置
 import router from "./router";
+// 导入Vuex状态管理
 import store from "@/store";
+// 导入axios插件，用于HTTP请求
 import axiosPlugin from './plugins/axios'
 
-// Vuetify
-import 'vuetify/styles'
-import '@mdi/font/css/materialdesignicons.css'
-import vuetify from './plugins/vuetify';
+// Vuetify UI框架相关导入
+import 'vuetify/styles'  // 导入Vuetify的样式
+import '@mdi/font/css/materialdesignicons.css'  // 导入Material Design图标
+import vuetify from './plugins/vuetify';  // 导入Vuetify插件配置
 
-// 视频播放相关
-import Video from 'video.js'
-import 'video.js/dist/video-js.css'
-// 注册video-player组件
+// 视频播放相关导入
+import Video from 'video.js'  // 导入video.js库
+import 'video.js/dist/video-js.css'  // 导入video.js的CSS样式
+// 导入vue-video-player组件
 import VueVideoPlayer from 'vue-video-player'
 
-// 图片查看器
-import Viewer from 'v-viewer';
-import 'viewerjs/dist/viewer.css';
+// 图片查看器相关导入
+import Viewer from 'v-viewer';  // 导入v-viewer图片查看器
+import 'viewerjs/dist/viewer.css';  // 导入viewer.js的CSS样式
 
-// 懒加载
-import VueLazyload from 'vue-lazyload'
-import circle from './assets/loading.gif'
+// 图片懒加载相关导入
+import VueLazyload from 'vue-lazyload'  // 导入懒加载插件
+import circle from './assets/loading.gif'  // 导入加载中显示的图片
 
-// 导入Cesium的CSS样式 - 尝试不同的路径
+// 导入Cesium地图库的CSS样式
 import 'cesium/Build/Cesium/Widgets/widgets.css';
 
-// 导入Cesium插件
+// 导入Cesium插件配置
 import cesiumPlugin from './plugins/cesium';
 
+// 创建Vue应用实例
 const app = createApp(App)
 
-// 全局属性设置
-app.config.globalProperties.$video = Video
-app.config.globalProperties.$bus = app
+// 设置全局属性，可在任何组件中通过this.$video和this.$bus访问
+app.config.globalProperties.$video = Video  // 将video.js实例添加为全局属性
+app.config.globalProperties.$bus = app  // 将app实例作为事件总线
 
-// 使用插件
-app.use(store)
-app.use(vuetify)
-app.use(cesiumPlugin)
-app.use(router)
-app.use(axiosPlugin)
+// 注册和使用各种插件
+app.use(store)  // 注册Vuex状态管理
+app.use(vuetify)  // 注册Vuetify UI框架
+app.use(cesiumPlugin)  // 注册Cesium地图插件
+app.use(router)  // 注册Vue Router路由
+app.use(axiosPlugin)  // 注册axios HTTP请求插件
 app.use(VueLazyload, {
-  loading: circle
+  loading: circle  // 配置懒加载插件，设置加载中显示的图片
 })
 app.use(Viewer, { 
   defaultOptions: { 
-    zIndex: 9999 
+    zIndex: 9999  // 配置图片查看器的z-index层级
   } 
 })
 
-// 注册视频播放组件
+// 全局注册视频播放组件
 app.component('video-player', VueVideoPlayer)
 
-// 视图器设置
+// 配置图片查看器的默认选项
 Viewer.setDefaults({
   Options: {
-    'inline': false,
-    'button': true, //右上角按钮
-    "navbar": true, //底部缩略图
-    "title": true, //当前图片标题
-    "toolbar": true, //底部工具栏
-    "tooltip": true, //显示缩放百分比
-    "movable": true, //是否可以移动
-    "zoomable": true, //是否可以缩放
-    "rotatable": true, //是否可旋转
-    "scalable": true, //是否可翻转
-    "transition": true, //使用 CSS3 过度
-    "fullscreen": true, //播放时是否全屏
-    "keyboard": true, //是否支持键盘
-    "url": "data-source",
+    'inline': false,  // 是否内联显示
+    'button': true,   // 是否显示右上角按钮
+    "navbar": true,   // 是否显示底部缩略图导航栏
+    "title": true,    // 是否显示当前图片标题
+    "toolbar": true,  // 是否显示底部工具栏
+    "tooltip": true,  // 是否显示缩放百分比提示
+    "movable": true,  // 是否可以移动图片
+    "zoomable": true, // 是否可以缩放图片
+    "rotatable": true, // 是否可以旋转图片
+    "scalable": true,  // 是否可以翻转图片
+    "transition": true, // 是否使用CSS3过渡效果
+    "fullscreen": true, // 播放时是否全屏
+    "keyboard": true,   // 是否支持键盘操作
+    "url": "data-source", // 获取原图URL的属性名
   },
+  // 以下是图片查看器的各种事件回调
   ready: function (e) {
     console.log(e.type, '组件以初始化');
   },
@@ -102,21 +110,26 @@ Viewer.setDefaults({
   }
 });
 
+// 设置生产环境提示，在Vue 3中已弃用但保留兼容
 app.config.productionTip = false
 
+// 将Vue应用挂载到DOM中id为app的元素
 app.mount('#app')
 
-// 路由守卫
+// 配置全局路由守卫，用于处理路由访问权限
 router.beforeEach((to, from, next) => {
+  // 检查目标路由是否需要身份验证
   if (to.matched.some(m => m.meta.auth)) {
-    //对路由进行验证
-    if (sessionStorage.getItem("loginState")) {//已经登录
-      next()//正常跳转到设置好的界面
+    // 如果路由需要验证，检查用户是否已登录
+    if (sessionStorage.getItem("loginState")) {
+      // 已登录，允许访问
+      next()
     } else {
-      // 未登录则跳转到登陆界面，query:{ Rurl: to.fullPath}表示把当前路由信息传递过去方便登录后跳转回来；
-      next({ path: '/Login', query: { redirect: to.fullPath } })//路由重定向
+      // 未登录，重定向到登录页面，并传递原目标路由以便登录后跳回
+      next({ path: '/Login', query: { redirect: to.fullPath } })
     }
   } else {
+    // 路由不需要验证，直接允许访问
     next();
   }
 })

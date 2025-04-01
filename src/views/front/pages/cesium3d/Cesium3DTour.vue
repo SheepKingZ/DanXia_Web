@@ -53,16 +53,16 @@
           </v-btn>
         </div>
         
-        <!-- 新增天气系统控制区 -->
-        <div class="control-section">
-          <h3>天气系统</h3>
-          <v-select
-            v-model="currentWeather"
-            :items="weatherOptions"
-            label="选择天气"
-            density="compact"
-            class="mb-2"
-          ></v-select>
+        <!-- 新增天气系统控制区 --> <!-- 定义天气系统控制的容器区域 -->
+        <div class="control-section"> <!-- 创建一个带有control-section类的容器div -->
+          <h3>天气系统</h3> <!-- 显示"天气系统"作为该控制区的标题 -->
+          <v-select 
+            v-model="currentWeather" 
+            :items="weatherOptions" 
+            label="选择天气" 
+            density="compact" 
+            class="mb-2" 
+          ></v-select> <!-- 关闭v-select组件标签 -->
           
           <div class="d-flex align-center">
             <span class="mr-2">时间控制:</span>
