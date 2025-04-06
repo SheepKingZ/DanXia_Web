@@ -11,12 +11,20 @@ import NProgress from 'nprogress';
 const routes = [
   //重定向，让项目跑起来的时候，访问/，立马让他定向到首页
   {
-    path: '/:pathMatch(.*)*',
+    path: '/:pathMatch(.*)*',//它会匹配任何没有被其他路由规则明确定义的URL
     redirect: "/front",
   },
   {
     path: "/front",
     component: () => import("../components/root/front"),
+    //这是Vue Router中的懒加载组件语法
+    //  () =>  - 箭头函数，创建一个不带参数的匿名函数
+    //当用户首次访问网站时，不会立即加载登录组件
+    // 当用户访问页面路径时：
+    // 箭头函数被执行
+    // import()语句开始加载组件
+    // 路由等待加载完成
+    // 组件被渲染到页面上
     children: [
       {
         path: "/front",
@@ -28,6 +36,7 @@ const routes = [
       auth: true
     }
   },
+
   {
     path: "/Login",
     component: () => import("../components/login.vue"),
@@ -35,13 +44,22 @@ const routes = [
       auth: false
     }
   },
+
   {
     path: "/front/pages",
     component: () => import("../components/root/front"),
+    //这是Vue Router中的懒加载组件语法
+    //  () =>  - 箭头函数，创建一个不带参数的匿名函数
+    //当用户首次访问网站时，不会立即加载登录组件
+    // 当用户访问页面路径时：
+    // 箭头函数被执行
+    // import()语句开始加载组件
+    // 路由等待加载完成
+    // 组件被渲染到页面上
     meta: {
-      auth: false
+      auth: false //是否需要登录
     },
-    children: [
+    children: [// children是路由嵌套的意思，子组件
       {
         path: "/front/pages/download/download1",
         name: "front-pages-download-download1",
@@ -51,9 +69,9 @@ const routes = [
         }
       },
       {
-        path: "/front/pages/route/route",
+        path: "/front/pages/route/route",//指定的路径
         name: "front-pages-route-route",
-        component: () => import("../views/front/pages/route/route.vue"),
+        component: () => import("../views/front/pages/route/route.vue"),//指定的组件
         meta: {
           auth: true
         }
